@@ -1,17 +1,21 @@
 ##### Data preparation #####
 # load packages
+rm(list = ls())
 library(ggplot2)
 library(dplyr)
 library(xtable)
+patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
+figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data. 
 
 # load data 
-bimatrix_choice <- read.csv("D:/Dropbox/Working Papers/Correlated Equilibrium/data/pilots/pilot_pair_9_13.csv", header = T)
+bimatrix_choice <- read.csv(patho, header = T)
+bimatrix_choice<-bimatrix_choice[,c(1:26)]
 
 # create round variable in choice data and create full dataset
 bimatrix_choice$round = as.double(substring(bimatrix_choice$subsession_id, 3, 4))
 full_data = bimatrix_choice
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
-full_data = full_data %>% mutate(period = tick + 1)
+full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
 
 # create round/pair id
 full_data$pair_id = paste(full_data$p1_code, full_data$p2_code, sep = "_")
@@ -39,6 +43,39 @@ full_data = full_data %>% mutate(p3_strategy_2 = ifelse(p3_strategy == 2, 1, 0))
 # check number of subjects
 uniquePlayer = union(unique(full_data$p1_code), unique(full_data$p2_code))
 
+# create payoff
+pay_chicken<-matrix(c(100,200,600,500),2,2)
+full_data$p1_payoff<-0
+full_data$p2_payoff<-0
+full_data$p3_payoff<-0
+
+for(row in seq(length(full_data$game=="BM"))){
+  full_data$p1_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p1_strategy[full_data$game=="BM"][row]+1,full_data$p2_strategy[full_data$game=="BM"][row]+1]
+  full_data$p2_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p2_strategy[full_data$game=="BM"][row]+1,full_data$p1_strategy[full_data$game=="BM"][row]+1]
+}
+
+full_data =
+full_data %>%
+  group_by(round_pair_id) %>%
+  mutate(p1_strategy_0_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_0), 0))/cumsum(coalesce(lag(p1_strategy_0),0)),
+         p1_strategy_1_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_1), 0))/cumsum(coalesce(lag(p1_strategy_1),0)),
+         p2_strategy_0_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_0), 0))/cumsum(coalesce(lag(p2_strategy_0),0)),
+         p2_strategy_1_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_1), 0))/cumsum(coalesce(lag(p2_strategy_1),0)),
+         p1_switch = abs(p1_strategy-lag(p1_strategy)), 
+         p2_switch = abs(p2_strategy-lag(p2_strategy))
+         )
+
+full_data$p1_strategy_0_regret[is.na(full_data$p1_strategy_0_regret)]<-0
+full_data$p1_strategy_1_regret[is.na(full_data$p1_strategy_1_regret)]<-0
+full_data$p2_strategy_0_regret[is.na(full_data$p2_strategy_0_regret)]<-0
+full_data$p2_strategy_1_regret[is.na(full_data$p2_strategy_1_regret)]<-0
+
+
+table(full_data$p2_switch,full_data$treatment)
+
+#how many DD are not colluding? 
+sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
+sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000 & full_data$p1_regret>0 & full_data$p2_regret>0]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
 
 ##### Pair-level data #####
 # pair level dynamics
@@ -52,7 +89,7 @@ for (i in 1:length(uniquepairs)){
   
   title = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
                 as.character(uniquepairs[i]), sep = '_')
-  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/pairwise_individual/", title, sep = "")
+  file = paste(figures1, title, sep = "")
   file = paste(file, ".png", sep = "")
   
   png(file, width = 700, height = 400)
@@ -69,7 +106,6 @@ for (i in 1:length(uniquepairs)){
   
   dev.off()
 }
-
 
 ##### Joint density #####
 uniquetreatment = unique(full_data$treatment)
