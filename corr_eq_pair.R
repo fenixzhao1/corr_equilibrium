@@ -1,21 +1,25 @@
 ##### Data preparation #####
 # load packages
-rm(list = ls())
+#rm(list = ls())
 library(ggplot2)
 library(dplyr)
 library(xtable)
-patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
-figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data. 
+library(haven)
+#patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
+#figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data.
+patho<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
+figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/corr_equilibrium/figures/"  #here enter your directory to store data. 
 
 # load data 
 bimatrix_choice <- read.csv(patho, header = T)
 bimatrix_choice<-bimatrix_choice[,c(1:26)]
 
 # create round variable in choice data and create full dataset
-bimatrix_choice$round = as.double(substring(bimatrix_choice$subsession_id, 3, 4))
+bimatrix_choice$round = as.double(substring(bimatrix_choice$subsession_id, 2, 3)) - 50
 full_data = bimatrix_choice
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
-full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
+#full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
+full_data = full_data %>% mutate(period = tick + 1)
 
 # create round/pair id
 full_data$pair_id = paste(full_data$p1_code, full_data$p2_code, sep = "_")
@@ -43,39 +47,119 @@ full_data = full_data %>% mutate(p3_strategy_2 = ifelse(p3_strategy == 2, 1, 0))
 # check number of subjects
 uniquePlayer = union(unique(full_data$p1_code), unique(full_data$p2_code))
 
-# create payoff
-pay_chicken<-matrix(c(100,200,600,500),2,2)
+# create and update type variables
+full_data$type = NA
+
+for (i in 1:length(full_data$tick)){
+  # update BM types
+  if (full_data$game[i] == 'BM'){
+    if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 1){full_data$type[i] = 'collude'}
+    else if (full_data$p1_strategy[i] != full_data$p2_strategy[i]){full_data$type[i] = 'Nash'}
+    else{full_data$type[i] = 'UL'}
+  }
+  # update MV types
+  else if (full_data$game[i] == 'MV'){
+    if (full_data$p1_strategy[i] == full_data$p2_strategy[i]){full_data$type[i] = 'diagonal'}
+    else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 0){full_data$type[i] = 'p1 advantage'}
+    else if (full_data$p1_strategy[i] == 2 & full_data$p2_strategy[i] == 1){full_data$type[i] = 'p1 advantage'}
+    else if (full_data$p1_strategy[i] == 0 & full_data$p2_strategy[i] == 2){full_data$type[i] = 'p1 advantage'}
+    else{{full_data$type[i] = 'p2 advantage'}}
+  }
+  # update FT types
+  else{
+    if (full_data$p3_strategy[i] == 1){full_data$type[i] = 'middle matrix'}
+    else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 0){full_data$type[i] = 'DL'}
+    else{full_data$type[i] = 'others'}
+  }
+}
+
+# create type dummies
+full_data = full_data %>% mutate(
+  type_collude = ifelse(full_data$type=='collude', 1, 0),
+  type_diagonal = ifelse(full_data$type=='diagonal', 1, 0),
+  type_DL = ifelse(full_data$type=='DL', 1, 0),
+  type_middle = ifelse(full_data$type=='middle matrix', 1, 0),
+  type_Nash = ifelse(full_data$type=='Nash', 1, 0),
+  type_others = ifelse(full_data$type=='others', 1, 0),
+  type_p1adv = ifelse(full_data$type=='p1 advantage', 1, 0),
+  type_p2adv = ifelse(full_data$type=='p2 advantage', 1, 0),
+  type_UL = ifelse(full_data$type=='UL', 1, 0)
+  )
+
+# create payoff variables
 full_data$p1_payoff<-0
 full_data$p2_payoff<-0
 full_data$p3_payoff<-0
 
-for(row in seq(length(full_data$game=="BM"))){
+# create payoff matrices
+pay_chicken<-matrix(c(100,200,600,500),2,2)
+pay_MV<-matrix(c(0,200,100,100,0,200,200,100,0),3,3)
+pay_FT1<-list()
+pay_FT1[[1]]<-matrix(c(0,100,0,100),2,2)
+pay_FT1[[2]]<-matrix(c(200,200,0,200),2,2)
+pay_FT1[[3]]<-matrix(c(0,100,0,100),2,2)
+pay_FT2<-list()
+pay_FT2[[1]]<-matrix(c(100,100,0,0),2,2)
+pay_FT2[[2]]<-matrix(c(200,200,0,200),2,2)
+pay_FT2[[3]]<-matrix(c(100,100,0,0),2,2)
+pay_FT3<-list()
+pay_FT3[[1]]<-matrix(c(300,100,0,0),2,2)
+pay_FT3[[2]]<-matrix(c(200,0,0,200),2,2)
+pay_FT3[[3]]<-matrix(c(0,0,0,300),2,2)
+
+for(row in seq(full_data$tick[full_data$game=="BM"])){
   full_data$p1_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p1_strategy[full_data$game=="BM"][row]+1,full_data$p2_strategy[full_data$game=="BM"][row]+1]
   full_data$p2_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p2_strategy[full_data$game=="BM"][row]+1,full_data$p1_strategy[full_data$game=="BM"][row]+1]
 }
 
+for(row in seq(full_data$tick[full_data$game=="MV"])){
+  full_data$p1_payoff[full_data$game=="MV"][row]<- pay_MV[full_data$p1_strategy[full_data$game=="MV"][row]+1,full_data$p2_strategy[full_data$game=="MV"][row]+1]
+  full_data$p2_payoff[full_data$game=="MV"][row]<- pay_MV[full_data$p2_strategy[full_data$game=="MV"][row]+1,full_data$p1_strategy[full_data$game=="MV"][row]+1]
+}
+
+for(row in seq(full_data$tick[full_data$game=="FP"])){
+  full_data$p1_payoff[full_data$game=="FP"][row]<- pay_FT1[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
+  full_data$p2_payoff[full_data$game=="FP"][row]<- pay_FT2[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
+  full_data$p3_payoff[full_data$game=="FP"][row]<- pay_FT3[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
+}
+
+# create regret
 full_data =
 full_data %>%
-  group_by(round_pair_id) %>%
+  group_by(session_round_pair_id) %>%
   mutate(p1_strategy_0_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_0), 0))/cumsum(coalesce(lag(p1_strategy_0),0)),
          p1_strategy_1_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_1), 0))/cumsum(coalesce(lag(p1_strategy_1),0)),
+         p1_strategy_2_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_2), 0))/cumsum(coalesce(lag(p1_strategy_2),0)),
          p2_strategy_0_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_0), 0))/cumsum(coalesce(lag(p2_strategy_0),0)),
          p2_strategy_1_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_1), 0))/cumsum(coalesce(lag(p2_strategy_1),0)),
-         p1_switch = abs(p1_strategy-lag(p1_strategy)), 
-         p2_switch = abs(p2_strategy-lag(p2_strategy))
+         p2_strategy_2_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_2), 0))/cumsum(coalesce(lag(p2_strategy_2),0)),
+         p3_strategy_0_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_0), 0))/cumsum(coalesce(lag(p3_strategy_0),0)),
+         p3_strategy_1_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_1), 0))/cumsum(coalesce(lag(p3_strategy_1),0)),
+         p3_strategy_2_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_2), 0))/cumsum(coalesce(lag(p3_strategy_2),0)),
+         p1_switch = ifelse(abs(p1_strategy-lag(p1_strategy))>0, 1, 0),
+         p2_switch = ifelse(abs(p2_strategy-lag(p2_strategy))>0, 1, 0),
+         p3_switch = ifelse(abs(p3_strategy-lag(p3_strategy))>0, 1, 0)
          )
 
 full_data$p1_strategy_0_regret[is.na(full_data$p1_strategy_0_regret)]<-0
 full_data$p1_strategy_1_regret[is.na(full_data$p1_strategy_1_regret)]<-0
+full_data$p1_strategy_2_regret[is.na(full_data$p1_strategy_2_regret)]<-0
 full_data$p2_strategy_0_regret[is.na(full_data$p2_strategy_0_regret)]<-0
 full_data$p2_strategy_1_regret[is.na(full_data$p2_strategy_1_regret)]<-0
+full_data$p2_strategy_2_regret[is.na(full_data$p2_strategy_2_regret)]<-0
+full_data$p3_strategy_0_regret[is.na(full_data$p3_strategy_0_regret)]<-0
+full_data$p3_strategy_1_regret[is.na(full_data$p3_strategy_1_regret)]<-0
+full_data$p3_strategy_2_regret[is.na(full_data$p3_strategy_2_regret)]<-0
 
+# table(full_data$p2_switch,full_data$treatment)
+# 
+# #how many DD are not colluding? 
+# sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
+# sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000 & full_data$p1_regret>0 & full_data$p2_regret>0]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
 
-table(full_data$p2_switch,full_data$treatment)
+# update dta file
+write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_9_13.dta")
 
-#how many DD are not colluding? 
-sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
-sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000 & full_data$p1_regret>0 & full_data$p2_regret>0]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
 
 ##### Pair-level data #####
 # pair level dynamics
@@ -111,8 +195,10 @@ for (i in 1:length(uniquepairs)){
 uniquetreatment = unique(full_data$treatment)
 density_matrix = list()
 
+df_second = filter(full_data, period > 20)
+
 for (i in 1:length(uniquetreatment)){
-  df_treatment = filter(full_data, treatment == uniquetreatment[i])
+  df_treatment = filter(df_second, treatment == uniquetreatment[i])
   
   # BM game
   if (df_treatment$game[1] == 'BM'){
@@ -299,3 +385,83 @@ for (i in 1:length(uniquetreatment)){
   dev.off()
 }
 
+
+##### Type over time #####
+uniquetreatment = unique(full_data$treatment)
+
+# generate aggregate data over period by treatments
+aggregate_plot = list()
+for (i in 1:length(uniquetreatment)){
+  df_treatment = filter(full_data, treatment == uniquetreatment[i])
+  # create dataset
+  aggregate_plot[[i]] = data.frame(
+    type_collude = tapply(df_treatment$type_collude, df_treatment$period, mean),
+    type_diagonal = tapply(df_treatment$type_diagonal, df_treatment$period, mean),
+    type_DL = tapply(df_treatment$type_DL, df_treatment$period, mean),
+    type_middle = tapply(df_treatment$type_middle, df_treatment$period, mean),
+    type_Nash = tapply(df_treatment$type_Nash, df_treatment$period, mean),
+    type_others = tapply(df_treatment$type_others, df_treatment$period, mean),
+    type_p1adv = tapply(df_treatment$type_p1adv, df_treatment$period, mean),
+    type_p2adv = tapply(df_treatment$type_p2adv, df_treatment$period, mean),
+    type_UL = tapply(df_treatment$type_UL, df_treatment$period, mean),
+    period = tapply(df_treatment$period, df_treatment$period, mean)
+  )
+
+  # start to draw plot
+  title = as.character(df_treatment$treatment[1])
+  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/", title, sep = "")
+  file = paste(file, ".png", sep = "")
+  png(file, width = 1000, height = 500)
+  
+  # BM plot
+  if (df_treatment$game[1] == 'BM'){
+    pic = ggplot(data = aggregate_plot[[i]]) +
+      geom_line(aes(x=period, y=type_collude, colour='blue')) +
+      geom_line(aes(x=period, y=type_Nash, colour='red')) +
+      geom_line(aes(x=period, y=type_UL, colour='black')) +
+      scale_x_discrete(name='period', waiver(), limits=c(1,10,20,30,40)) +
+      scale_y_continuous(name='average mixture', limits=c(0,1)) +
+      ggtitle(title) + 
+      theme_bw() + 
+      scale_colour_manual(values=c('blue', 'red', 'black'), labels=c('UL', 'collude', 'either Nash')) +
+      theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+            axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+            axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  }
+  # MV plot
+  else if (df_treatment$game[1] == 'MV'){
+    pic = ggplot(data = aggregate_plot[[i]]) +
+      geom_line(aes(x=period, y=type_p1adv, colour='blue')) +
+      geom_line(aes(x=period, y=type_p2adv, colour='red')) +
+      geom_line(aes(x=period, y=type_diagonal, colour='black')) +
+      scale_x_discrete(name='period', waiver(), limits=c(1,10,20,30,40)) +
+      scale_y_continuous(name='average mixture', limits=c(0,1)) +
+      ggtitle(title) + 
+      theme_bw() + 
+      scale_colour_manual(values=c('blue', 'red', 'black'), labels=c('diagonal', 'p1_adv', 'p2_adv')) +
+      theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+            axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+            axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  }
+  # FT plot
+  else if (df_treatment$game[1] == 'FP'){ 
+    pic = ggplot(data = aggregate_plot[[i]]) +
+      geom_line(aes(x=period, y=type_DL, colour='blue')) +
+      geom_line(aes(x=period, y=type_middle, colour='red')) +
+      geom_line(aes(x=period, y=type_others, colour='black')) +
+      scale_x_discrete(name='period', waiver(), limits=c(1,10,20,30,40)) +
+      scale_y_continuous(name='average mixture', limits=c(0,1)) +
+      ggtitle(title) + 
+      theme_bw() + 
+      scale_colour_manual(values=c('blue', 'red', 'black'), labels=c('others','DL', 'middle')) +
+      theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+            axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+            axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  }
+  
+  print(pic)
+  dev.off()
+}
+
+
+##### Regret vs strategy #####
