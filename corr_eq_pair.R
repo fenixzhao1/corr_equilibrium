@@ -7,19 +7,35 @@ library(xtable)
 library(haven)
 #patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
 #figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data.
-patho<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
-figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/corr_equilibrium/figures/"  #here enter your directory to store data. 
+path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-10-L.csv" #here enter your data path
+path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-11-L.csv" #here enter your data path
+figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"  #here enter your directory to store data. 
 
 # load data 
-bimatrix_choice <- read.csv(patho, header = T)
-bimatrix_choice<-bimatrix_choice[,c(1:26)]
+df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
+df_1 <- df_1[,c(1:26)]
+df_1$round = as.double(substring(df_1$subsession_id, 2, 3))
+df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
+df_2 <- df_2[,c(1:26)]
+df_2$round = as.double(substring(df_2$subsession_id, 2, 3)) - 50
+df = rbind(df_1, df_2)
 
 # create round variable in choice data and create full dataset
-bimatrix_choice$round = as.double(substring(bimatrix_choice$subsession_id, 2, 3)) - 50
-full_data = bimatrix_choice
+full_data = df
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
-#full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
-full_data = full_data %>% mutate(period = tick + 1)
+full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
+
+# unify matrices
+full_data$p1_strategy[full_data$game == 'BM2']<-1-full_data$p1_strategy[full_data$game == 'BM2']
+full_data$p2_strategy[full_data$game == 'BM2']<-1-full_data$p2_strategy[full_data$game == 'BM2']
+
+full_data$p1_strategy[full_data$game == 'MV2' & full_data$p1_strategy>0]<-2/full_data$p1_strategy[full_data$game == 'MV2' & full_data$p1_strategy>0]
+full_data$p2_strategy[full_data$game == 'MV2' & full_data$p2_strategy!=1]<-2-full_data$p2_strategy[full_data$game == 'MV2' & full_data$p2_strategy!=1]
+
+full_data$game[full_data$game=='BM1']<-'BM'
+full_data$game[full_data$game == 'BM2']<-'BM'
+full_data$game[full_data$game=='MV1']<-'MV'
+full_data$game[full_data$game == 'MV2']<-'MV'
 
 # create round/pair id
 full_data$pair_id = paste(full_data$p1_code, full_data$p2_code, sep = "_")
@@ -173,7 +189,7 @@ for (i in 1:length(uniquepairs)){
   
   title = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
                 as.character(uniquepairs[i]), sep = '_')
-  file = paste(figures1, title, sep = "")
+  file = paste(figures, title, sep = "")
   file = paste(file, ".png", sep = "")
   
   png(file, width = 700, height = 400)
@@ -291,7 +307,7 @@ xtable(density_matrix[[5]], digits = 2, caption = uniquetreatment[5])
 xtable(density_matrix[[6]], digits = 2, caption = uniquetreatment[6])
 
 
-##### Aggregate over time #####
+##### Aggregate over time (not used) #####
 uniquetreatment = unique(full_data$treatment)
 
 # generate aggregate data over period by treatments
@@ -463,5 +479,3 @@ for (i in 1:length(uniquetreatment)){
   dev.off()
 }
 
-
-##### Regret vs strategy #####
