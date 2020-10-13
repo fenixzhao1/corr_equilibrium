@@ -425,7 +425,7 @@ for (i in 1:length(uniquetreatment)){
 
   # start to draw plot
   title = as.character(df_treatment$treatment[1])
-  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/", title, sep = "")
+  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
   file = paste(file, ".png", sep = "")
   png(file, width = 1000, height = 500)
   
@@ -478,4 +478,98 @@ for (i in 1:length(uniquetreatment)){
   print(pic)
   dev.off()
 }
+
+
+##### Type by pair #####
+# select the data after period 20
+uniquetreatment = unique(full_data$treatment)
+uniquepair = unique(full_data$session_round_pair_id)
+df_second = filter(full_data, period > 20)
+
+# set up data container 
+table = as.data.frame(matrix(nrow=3*length(uniquepair), ncol=5))
+colnames(table)=c("ID", "game", "info", "type", "freq")
+
+for (i in 1:length(uniquepair)){
+  
+  df_pair = filter(df_second, session_round_pair_id == uniquepair[i])
+  # each pair has 3 rows
+  # update ID, game and information treatment info
+  table$ID[3*i-2] = df_pair$session_round_pair_id[1]
+  table$ID[3*i-1] = df_pair$session_round_pair_id[1]
+  table$ID[3*i] = df_pair$session_round_pair_id[1]
+  
+  table$game[3*i-2] = df_pair$game[1]
+  table$game[3*i-1] = df_pair$game[1]
+  table$game[3*i] = df_pair$game[1]
+  
+  table$info[3*i-2] = df_pair$information[1]
+  table$info[3*i-1] = df_pair$information[1]
+  table$info[3*i] = df_pair$information[1]
+  
+  # update type and frequency info for BM
+  if (df_pair$game[1] == 'BM'){
+    table$type[3*i-2] = 'collude'
+    table$freq[3*i-2] = sum(df_pair$type_collude)
+    table$type[3*i-1] = 'Nash'
+    table$freq[3*i-1] = sum(df_pair$type_Nash)
+    table$type[3*i] = 'UL'
+    table$freq[3*i] = sum(df_pair$type_UL)
+  }
+  # update type and frequency info for MV
+  else{
+    table$type[3*i-2] = 'p1 advantage'
+    table$freq[3*i-2] = sum(df_pair$type_p1adv)
+    table$type[3*i-1] = 'p2 advantage'
+    table$freq[3*i-1] = sum(df_pair$type_p2adv)
+    table$type[3*i] = 'diagonal'
+    table$freq[3*i] = sum(df_pair$type_diagonal)
+  }
+}
+
+# type pair for BM barplot
+table_bm = filter(table, game == 'BM')
+table_bm = arrange(table_bm, type, freq)
+title = 'BM_PairType'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 1000, height = 500)
+
+pic = ggplot(table_bm, aes(x= reorder(ID, freq), y=freq, fill=type)) +
+      geom_bar(stat="identity", position='fill', width=1, colour='white') +
+      ggtitle(title) +
+      scale_x_discrete(name='Pair ID', waiver()) +
+      scale_y_continuous(name='strategy profile type') +
+      theme_bw() +
+      theme(plot.title = element_text(hjust = 0.5, size = 30),
+            axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25),
+            legend.text = element_text(size = 15))
+
+print(pic)
+
+dev.off()
+
+
+# type pair for MV barplot
+table_mv = filter(table, game == 'MV')
+title = 'MV_PairType'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 1000, height = 500)
+
+pic = ggplot(table_mv, aes(x=ID, y=freq, fill=type)) +
+      geom_bar(stat="identity", position='fill', width=1, colour='white') +
+      ggtitle(title) +
+      scale_x_discrete(name='Pair ID', waiver()) +
+      scale_y_continuous(name='strategy profile type') +
+      theme_bw() +
+      theme(plot.title = element_text(hjust = 0.5, size = 30),
+            axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25),
+            legend.text = element_text(size = 15))
+
+print(pic)
+
+dev.off()
+
+
 
