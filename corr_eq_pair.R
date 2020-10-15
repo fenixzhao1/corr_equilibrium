@@ -9,16 +9,18 @@ library(haven)
 #figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data.
 path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-10-L.csv" #here enter your data path
 path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-11-L.csv" #here enter your data path
+path3<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-14-L.csv" #here enter your data path
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"  #here enter your directory to store data. 
 
 # load data 
-df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
-df_1 <- df_1[,c(1:26)]
-df_1$round = as.double(substring(df_1$subsession_id, 2, 3))
-df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
-df_2 <- df_2[,c(1:26)]
-df_2$round = as.double(substring(df_2$subsession_id, 2, 3)) - 50
-df = rbind(df_1, df_2)
+# df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
+# df_1 <- df_1[,c(1:26)]
+# df_1$round = as.double(substring(df_1$subsession_id, 2, 3))
+# df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
+# df_2 <- df_2[,c(1:26)]
+# df_2$round = as.double(substring(df_2$subsession_id, 2, 3)) - 50
+# df = rbind(df_1, df_2)
+df <- read.csv(path3, header = T, stringsAsFactors = FALSE)
 
 # create round variable in choice data and create full dataset
 full_data = df
@@ -530,7 +532,13 @@ for (i in 1:length(uniquepair)){
 # type pair for BM barplot
 table_bm = filter(table, game == 'BM')
 table_bm = arrange(table_bm, type, freq)
-title = 'BM_PairType'
+
+table_bm$te<-0
+table_bm$te[table_bm$type=="UL"]<-1
+table_bm$te<-table_bm$te*table_bm$freq
+table_bm$ID= with(table_bm, reorder(ID, te, max))
+
+title = 'BM_PairType_new'
 file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
 file = paste(file, ".png", sep = "")
 png(file, width = 1000, height = 500)
