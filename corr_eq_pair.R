@@ -7,23 +7,16 @@ library(xtable)
 library(haven)
 #patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
 #figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data.
-path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-10-L.csv" #here enter your data path
-path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-11-L.csv" #here enter your data path
-path3<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/produce-2020-10-14-L.csv" #here enter your data path
+path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_8pxwav0s.csv" #here enter your data path
+path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_4d93o8o2.csv" #here enter your data path
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"  #here enter your directory to store data. 
 
 # load data 
-# df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
-# df_1 <- df_1[,c(1:26)]
-# df_1$round = as.double(substring(df_1$subsession_id, 2, 3))
-# df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
-# df_2 <- df_2[,c(1:26)]
-# df_2$round = as.double(substring(df_2$subsession_id, 2, 3)) - 50
-# df = rbind(df_1, df_2)
-df <- read.csv(path3, header = T, stringsAsFactors = FALSE)
+df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
+df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
 
 # create round variable in choice data and create full dataset
-full_data = df
+full_data = rbind(df_1, df_2)
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
 full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
 
@@ -426,7 +419,7 @@ for (i in 1:length(uniquetreatment)){
   )
 
   # start to draw plot
-  title = as.character(df_treatment$treatment[1])
+  title = paste('typeovertime', as.character(df_treatment$treatment[1]), sep = '_')
   file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
   file = paste(file, ".png", sep = "")
   png(file, width = 1000, height = 500)
@@ -489,8 +482,8 @@ uniquepair = unique(full_data$session_round_pair_id)
 df_second = filter(full_data, period > 20)
 
 # set up data container 
-table = as.data.frame(matrix(nrow=3*length(uniquepair), ncol=5))
-colnames(table)=c("ID", "game", "info", "type", "freq")
+table = as.data.frame(matrix(nrow=3*length(uniquepair), ncol=6))
+colnames(table)=c("ID", "treatment", "game", "info", "type", "freq")
 
 for (i in 1:length(uniquepair)){
   
@@ -500,6 +493,10 @@ for (i in 1:length(uniquepair)){
   table$ID[3*i-2] = df_pair$session_round_pair_id[1]
   table$ID[3*i-1] = df_pair$session_round_pair_id[1]
   table$ID[3*i] = df_pair$session_round_pair_id[1]
+  
+  table$treatment[3*i-2] = df_pair$treatment[1]
+  table$treatment[3*i-1] = df_pair$treatment[1]
+  table$treatment[3*i] = df_pair$treatment[1]
   
   table$game[3*i-2] = df_pair$game[1]
   table$game[3*i-1] = df_pair$game[1]
@@ -529,21 +526,25 @@ for (i in 1:length(uniquepair)){
   }
 }
 
-# type pair for BM barplot
-table_bm = filter(table, game == 'BM')
-table_bm = arrange(table_bm, type, freq)
-
-table_bm$te<-0
-table_bm$te[table_bm$type=="UL"]<-1
-table_bm$te<-table_bm$te*table_bm$freq
-table_bm$ID= with(table_bm, reorder(ID, te, max))
-
-title = 'BM_PairType_new'
-file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
-file = paste(file, ".png", sep = "")
-png(file, width = 1000, height = 500)
-
-pic = ggplot(table_bm, aes(x= reorder(ID, freq), y=freq, fill=type)) +
+# loop over treatments to create figure
+for (i in 1:length(uniquetreatment)){
+  
+  table_game = filter(table, treatment == uniquetreatment[i])
+  
+  # type pair for BM barplot
+  if (table_game$game[1] == 'BM'){
+    
+    table_game$te<-0
+    table_game$te[table_game$type=="UL"]<-1
+    table_game$te<-table_game$te*table_game$freq
+    table_game$ID= with(table_game, reorder(ID, te, max))
+    
+    title = paste('pairtype', as.character(table_game$treatment[1]), sep = '_')
+    file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+    file = paste(file, ".png", sep = "")
+    png(file, width = 1000, height = 500)
+    
+    pic = ggplot(table_game, aes(x= reorder(ID, freq), y=freq, fill=type)) +
       geom_bar(stat="identity", position='fill', width=1, colour='white') +
       ggtitle(title) +
       scale_x_discrete(name='Pair ID', waiver()) +
@@ -552,20 +553,23 @@ pic = ggplot(table_bm, aes(x= reorder(ID, freq), y=freq, fill=type)) +
       theme(plot.title = element_text(hjust = 0.5, size = 30),
             axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25),
             legend.text = element_text(size = 15))
-
-print(pic)
-
-dev.off()
-
-
-# type pair for MV barplot
-table_mv = filter(table, game == 'MV')
-title = 'MV_PairType'
-file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
-file = paste(file, ".png", sep = "")
-png(file, width = 1000, height = 500)
-
-pic = ggplot(table_mv, aes(x=ID, y=freq, fill=type)) +
+    
+    print(pic)
+    dev.off()
+  }
+  # type pair for MV barplot
+  else{
+    table_game$te<-0
+    table_game$te[table_game$type=="diagonal"]<-1
+    table_game$te<-table_game$te*table_game$freq
+    table_game$ID= with(table_game, reorder(ID, te, max))
+  
+    title = paste('pairtype', as.character(table_game$treatment[1]), sep = '_')
+    file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+    file = paste(file, ".png", sep = "")
+    png(file, width = 1000, height = 500)
+  
+    pic = ggplot(table_game, aes(x=ID, y=freq, fill=type)) +
       geom_bar(stat="identity", position='fill', width=1, colour='white') +
       ggtitle(title) +
       scale_x_discrete(name='Pair ID', waiver()) +
@@ -574,10 +578,9 @@ pic = ggplot(table_mv, aes(x=ID, y=freq, fill=type)) +
       theme(plot.title = element_text(hjust = 0.5, size = 30),
             axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25),
             legend.text = element_text(size = 15))
-
-print(pic)
-
-dev.off()
-
-
+  
+    print(pic)
+    dev.off()
+  }
+}
 
