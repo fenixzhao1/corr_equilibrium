@@ -7,16 +7,31 @@ library(xtable)
 library(haven)
 #patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
 #figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data.
-path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_8pxwav0s.csv" #here enter your data path
-path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_4d93o8o2.csv" #here enter your data path
-figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"  #here enter your directory to store data. 
+path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_8pxwav0s.csv" 
+path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_4d93o8o2.csv" 
+path3<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_p1cc2ryg.csv" 
+path4<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_pn1grluj.csv" 
+#path5<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_oxmqfz2b.csv" 
+#path6<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_e6am4g6s.csv" 
+figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"
 
 # load data 
 df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
+df_1 = select(df_1, 1:26)
 df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
+df_2 = select(df_2, 1:26)
+df_3 <- read.csv(path3, header = T, stringsAsFactors = FALSE)
+df_3 = select(df_3, 1:26)
+df_4 <- read.csv(path4, header = T, stringsAsFactors = FALSE)
+df_4 = select(df_4, 1:26)
+#df_5 <- read.csv(path5, header = T, stringsAsFactors = FALSE)
+#df_5 = select(df_5, 1:26)
+#df_6 <- read.csv(path6, header = T, stringsAsFactors = FALSE)
+#df_6 = select(df_6, 1:26)
 
 # create round variable in choice data and create full dataset
-full_data = rbind(df_1, df_2)
+full_data = rbind(df_1, df_2, df_3, df_4)
+rm(df_1, df_2, df_3, df_4)
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
 full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
 
@@ -44,7 +59,7 @@ full_data = full_data %>% mutate(time = ifelse(num_subperiods == 0, 'Continuous'
 full_data = full_data %>% mutate(information = ifelse(max_info == TRUE, 'MaxInfo', 'MinInfo'))
 full_data$treatment = paste(full_data$game, full_data$information, full_data$matching, full_data$time, sep = '_')
 
-# create mixed strategies
+# create strategy indicators
 full_data = full_data %>% mutate(p1_strategy_0 = ifelse(p1_strategy == 0, 1, 0))
 full_data = full_data %>% mutate(p1_strategy_1 = ifelse(p1_strategy == 1, 1, 0))
 full_data = full_data %>% mutate(p1_strategy_2 = ifelse(p1_strategy == 2, 1, 0))
@@ -96,6 +111,31 @@ full_data = full_data %>% mutate(
   type_p2adv = ifelse(full_data$type=='p2 advantage', 1, 0),
   type_UL = ifelse(full_data$type=='UL', 1, 0)
   )
+
+# create and update type variables
+full_data$type2 = NA
+
+for (i in 1:length(full_data$tick)){
+  # update BM types
+  if (full_data$game[i] == 'BM'){
+    if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 4}
+    else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 0){full_data$type2[i] = 3}
+    else if (full_data$p1_strategy[i] == 0 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 2}
+    else{full_data$type2[i] = 1}
+  }
+  # update MV types
+  else{
+    if (full_data$p1_strategy[i] == 0 & full_data$p2_strategy[i] == 0){full_data$type2[i] = 1}
+    else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 2}
+    else if (full_data$p1_strategy[i] == 2 & full_data$p2_strategy[i] == 2){full_data$type2[i] = 3}
+    else if (full_data$p1_strategy[i] == 0 & full_data$p2_strategy[i] == 2){full_data$type2[i] = 4}
+    else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 0){full_data$type2[i] = 5}
+    else if (full_data$p1_strategy[i] == 2 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 6}
+    else if (full_data$p1_strategy[i] == 0 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 7}
+    else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 2){full_data$type2[i] = 8}
+    else{full_data$type2[i] = 9}
+  }
+}
 
 # create payoff variables
 full_data$p1_payoff<-0
@@ -162,17 +202,15 @@ full_data$p3_strategy_0_regret[is.na(full_data$p3_strategy_0_regret)]<-0
 full_data$p3_strategy_1_regret[is.na(full_data$p3_strategy_1_regret)]<-0
 full_data$p3_strategy_2_regret[is.na(full_data$p3_strategy_2_regret)]<-0
 
-# table(full_data$p2_switch,full_data$treatment)
-# 
 # #how many DD are not colluding? 
 # sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
 # sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000 & full_data$p1_regret>0 & full_data$p2_regret>0]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
 
-# update dta file
-write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_9_13.dta")
+# # update dta file
+# write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_9_13.dta")
 
 
-##### Pair-level data #####
+##### Pair-level data (not used) #####
 # pair level dynamics
 full_data = full_data %>% mutate(p2_strategy_jitter = p2_strategy + 0.01)
 full_data = full_data %>% mutate(p3_strategy_jitter = ifelse(is.na(p3_strategy), NA, p3_strategy + 0.02))
@@ -201,6 +239,64 @@ for (i in 1:length(uniquepairs)){
   
   dev.off()
 }
+
+
+##### Pair-level data by type #####
+# pair level dynamics
+uniquepairs = unique(full_data$session_round_pair_id)
+
+# loop over pairs
+for (i in 1:length(uniquepairs)){
+  pairdata = filter(full_data, session_round_pair_id == uniquepairs[i])
+  pairdata_second = filter(pairdata, period > 20)
+  # skip those incomplete pairs
+  if (length(pairdata$tick) <= 20){next}
+  
+  # calculate profile index and draw graph for BM
+  if (pairdata$game[1] == 'BM'){
+    
+    collude = round(mean(pairdata_second$type_collude), digits = 2)
+    nash = round(mean(pairdata_second$type_Nash), digits = 2)
+    
+    title1 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+                   as.character(pairdata$session_round_pair_id[1]), sep = '_')
+    title2 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+                   'Collude', as.character(collude), 'Nash', as.character(nash), sep = ' ')
+    file = paste(figures, title1, sep = "")
+    file = paste(file, ".png", sep = "")
+    
+    png(file, width = 700, height = 400)
+    plot(pairdata$period, pairdata$type2, type='b', col="blue",
+         xlab="time", ylab="strategy profile", ylim = c(0,4), main=title2)
+    abline(h=1.5, col='red')
+    abline(h=3.5, col='red')
+    
+    dev.off()
+  }
+  # same for MV
+  else{
+    
+    p1adv = round(mean(pairdata_second$type_p1adv), digits = 2)
+    p2adv = round(mean(pairdata_second$type_p2adv), digits = 2)
+    
+    title1 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+                   as.character(pairdata$session_round_pair_id[1]), sep = '_')
+    title2 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+                   'p1 adv', as.character(p1adv), 'p2 adv', as.character(p2adv), sep = ' ')
+    file = paste(figures, title1, sep = "")
+    file = paste(file, ".png", sep = "")
+    
+    png(file, width = 700, height = 400)
+    xy=par("usr")
+    plot(pairdata$period, pairdata$type2, type='b', col="blue",
+         xlab="time", ylab="strategy profile", ylim = c(0,9), main=title2)
+    abline(h=3.5, col='red')
+    abline(h=6.5, col='red')
+    
+    dev.off()
+  }
+}
+
 
 ##### Joint density #####
 uniquetreatment = unique(full_data$treatment)
@@ -478,8 +574,8 @@ for (i in 1:length(uniquetreatment)){
 ##### Type by pair #####
 # select the data after period 20
 uniquetreatment = unique(full_data$treatment)
-uniquepair = unique(full_data$session_round_pair_id)
 df_second = filter(full_data, period > 20)
+uniquepair = unique(df_second$session_round_pair_id)
 
 # set up data container 
 table = as.data.frame(matrix(nrow=3*length(uniquepair), ncol=6))
@@ -535,7 +631,7 @@ for (i in 1:length(uniquetreatment)){
   if (table_game$game[1] == 'BM'){
     
     table_game$te<-0
-    table_game$te[table_game$type=="UL"]<-1
+    table_game$te[table_game$type=="collude"]<-1
     table_game$te<-table_game$te*table_game$freq
     table_game$ID= with(table_game, reorder(ID, te, max))
     
@@ -560,7 +656,7 @@ for (i in 1:length(uniquetreatment)){
   # type pair for MV barplot
   else{
     table_game$te<-0
-    table_game$te[table_game$type=="diagonal"]<-1
+    table_game$te[table_game$type=="p1 advantage"]<-1
     table_game$te<-table_game$te*table_game$freq
     table_game$ID= with(table_game, reorder(ID, te, max))
   
@@ -584,3 +680,284 @@ for (i in 1:length(uniquetreatment)){
   }
 }
 
+
+##### duration at strategy profiles - corr eq #####
+## stay at corr eq positions
+# create dataset
+full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
+uniquepairs = unique(full_data$session_round_pair_id)
+
+df_length = data.frame(matrix(0, nrow = 1, ncol = 1))
+df_char = data.frame(matrix(NA, nrow = 1, ncol = 4))
+colnames(df_length) = c('length')
+colnames(df_char) = c('session_round_pair_id', 'treatment', 'game', 'info')
+
+# loop over pairs to update the dataset
+for (i in 1:length(uniquepairs)){
+  df_pair = filter(full_data, session_round_pair_id == uniquepairs[i])
+  # initialize the event observation and parameters
+  pair_id = df_pair$session_round_pair_id[1]
+  treatment = df_pair$treatment[1]
+  game = df_pair$game[1]
+  info = df_pair$information[1]
+  time = 0
+  
+  # loop over observations in BM
+  if (game == 'BM'){
+    for (j in 1:length(df_pair$period)){
+      # j > 1
+      if (j > 1){
+        if (df_pair$type2[j] == df_pair$type2[j-1] & df_pair$type_UL[j] == 0){
+          time = time + 1
+        }
+        else{
+          if (time > 0){
+            event = c(pair_id, treatment, game, info)
+            df_length = rbind(df_length, time)
+            df_char = rbind(df_char, event)
+            time = 0
+          }
+          if (df_pair$type_UL[j] == 0){
+            time = time + 1
+          }
+        }
+      }
+      # j = 1
+      else{
+        if (df_pair$type_UL[j] == 0){
+          time = time + 1
+        }
+      }
+      
+      # record the last event
+      if (j == length(df_pair$period) & time > 0){
+        event = c(pair_id, treatment, game, info)
+        df_length = rbind(df_length, time)
+        df_char = rbind(df_char, event)
+      }
+    }
+  }
+  # loop over observations in MV
+  else{
+    for (j in 1:length(df_pair$period)){
+      # j > 1
+      if (j > 1){
+        if (df_pair$type2[j] == df_pair$type2[j-1] & df_pair$type_diagonal[j] == 0){
+          time = time + 1
+        }
+        else{
+          if (time > 0){
+            event = c(pair_id, treatment, game, info)
+            df_length = rbind(df_length, time)
+            df_char = rbind(df_char, event)
+            time = 0
+          }
+          if (df_pair$type_diagonal[j] == 0){
+            time = time + 1
+          }
+        }
+      }
+      # j = 1
+      else{
+        if (df_pair$type_diagonal[j] == 0){
+          time = time + 1
+        }
+      }
+      
+      # record the last event
+      if (j == length(df_pair$period) & time > 0){
+        event = c(pair_id, treatment, game, info)
+        df_length = rbind(df_length, time)
+        df_char = rbind(df_char, event)
+      }
+    }
+  }
+}
+
+# organize dataset
+df_stay = cbind(df_length, df_char)
+df_stay = filter(df_stay, is.na(treatment) == FALSE)
+
+df_bm_max = filter(df_stay, game == 'BM' & info == 'MaxInfo')
+df_bm_min = filter(df_stay, game == 'BM' & info == 'MinInfo')
+df_mv_max = filter(df_stay, game == 'MV' & info == 'MaxInfo')
+df_mv_min = filter(df_stay, game == 'MV' & info == 'MinInfo')
+
+# set up plot for BM
+title = 'distribution_duration_BM_correq'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 700, height = 300)
+pic = ggplot() +
+  stat_ecdf(geom="step", data=df_bm_max, aes(x=length, colour='blue')) +
+  stat_ecdf(geom="step", data=df_bm_min, aes(x=length, colour='red')) +
+  scale_x_continuous(name='duration(period)', waiver(), limits=c(0,10), breaks = c(0,2,4,6,8,10)) +
+  scale_y_continuous(name='cdf') +
+  theme_bw() + 
+  scale_colour_manual(values=c('blue','red'), labels=c('MaxInfo','MinInfo')) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+        axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+
+print(pic)
+dev.off()
+
+# set up plot for MV
+title = 'distribution_duration_MV_correq'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 700, height = 300)
+pic = ggplot() +
+  stat_ecdf(geom="step", data=df_mv_max, aes(x=length, colour='blue')) +
+  stat_ecdf(geom="step", data=df_mv_min, aes(x=length, colour='red')) +
+  scale_x_continuous(name='duration(period)', waiver(), limits=c(0,10), breaks = c(0,2,4,6,8,10)) +
+  scale_y_continuous(name='cdf') +
+  theme_bw() + 
+  scale_colour_manual(values=c('blue','red'), labels=c('MaxInfo','MinInfo')) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+        axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+
+print(pic)
+dev.off()
+
+
+##### duration at strategy profiles - UL or diagonal #####
+## stay at mimsmatch positions
+# create dataset
+full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
+uniquepairs = unique(full_data$session_round_pair_id)
+
+df_length = data.frame(matrix(0, nrow = 1, ncol = 1))
+df_char = data.frame(matrix(NA, nrow = 1, ncol = 4))
+colnames(df_length) = c('length')
+colnames(df_char) = c('session_round_pair_id', 'treatment', 'game', 'info')
+
+# loop over pairs to update the dataset
+for (i in 1:length(uniquepairs)){
+  df_pair = filter(full_data, session_round_pair_id == uniquepairs[i])
+  # initialize the event observation and parameters
+  pair_id = df_pair$session_round_pair_id[1]
+  treatment = df_pair$treatment[1]
+  game = df_pair$game[1]
+  info = df_pair$information[1]
+  time = 0
+  
+  # loop over observations in BM
+  if (game == 'BM'){
+    for (j in 1:length(df_pair$period)){
+      # j > 1
+      if (j > 1){
+        if (df_pair$type2[j] == df_pair$type2[j-1] & df_pair$type_UL[j] == 1){
+          time = time + 1
+        }
+        else{
+          if (time > 0){
+            event = c(pair_id, treatment, game, info)
+            df_length = rbind(df_length, time)
+            df_char = rbind(df_char, event)
+            time = 0
+          }
+          if (df_pair$type_UL[j] == 1){
+            time = time + 1
+          }
+        }
+      }
+      # j = 1
+      else{
+        if (df_pair$type_UL[j] == 1){
+          time = time + 1
+        }
+      }
+      
+      # record the last event
+      if (j == length(df_pair$period) & time > 0){
+        event = c(pair_id, treatment, game, info)
+        df_length = rbind(df_length, time)
+        df_char = rbind(df_char, event)
+      }
+    }
+  }
+  # loop over observations in MV
+  else{
+    for (j in 1:length(df_pair$period)){
+      # j > 1
+      if (j > 1){
+        if (df_pair$type2[j] == df_pair$type2[j-1] & df_pair$type_diagonal[j] == 1){
+          time = time + 1
+        }
+        else{
+          if (time > 0){
+            event = c(pair_id, treatment, game, info)
+            df_length = rbind(df_length, time)
+            df_char = rbind(df_char, event)
+            time = 0
+          }
+          if (df_pair$type_diagonal[j] == 1){
+            time = time + 1
+          }
+        }
+      }
+      # j = 1
+      else{
+        if (df_pair$type_diagonal[j] == 1){
+          time = time + 1
+        }
+      }
+      
+      # record the last event
+      if (j == length(df_pair$period) & time > 0){
+        event = c(pair_id, treatment, game, info)
+        df_length = rbind(df_length, time)
+        df_char = rbind(df_char, event)
+      }
+    }
+  }
+}
+
+# organize dataset
+df_stay = cbind(df_length, df_char)
+df_stay = filter(df_stay, is.na(treatment) == FALSE)
+
+df_bm_max = filter(df_stay, game == 'BM' & info == 'MaxInfo')
+df_bm_min = filter(df_stay, game == 'BM' & info == 'MinInfo')
+df_mv_max = filter(df_stay, game == 'MV' & info == 'MaxInfo')
+df_mv_min = filter(df_stay, game == 'MV' & info == 'MinInfo')
+
+# set up plot for BM
+title = 'distribution_duration_BM_mismatch'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 700, height = 300)
+pic = ggplot() +
+  stat_ecdf(geom="step", data=df_bm_max, aes(x=length, colour='blue')) +
+  stat_ecdf(geom="step", data=df_bm_min, aes(x=length, colour='red')) +
+  scale_x_continuous(name='duration(period)', waiver(), limits=c(0,10), breaks = c(0,2,4,6,8,10)) +
+  scale_y_continuous(name='cdf') +
+  theme_bw() + 
+  scale_colour_manual(values=c('blue','red'), labels=c('MaxInfo','MinInfo')) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+        axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+
+print(pic)
+dev.off()
+
+# set up plot for MV
+title = 'distribution_duration_MV_mismatch'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 700, height = 300)
+pic = ggplot() +
+  stat_ecdf(geom="step", data=df_mv_max, aes(x=length, colour='blue')) +
+  stat_ecdf(geom="step", data=df_mv_min, aes(x=length, colour='red')) +
+  scale_x_continuous(name='duration(period)', waiver(), limits=c(0,10), breaks = c(0,2,4,6,8,10)) +
+  scale_y_continuous(name='cdf') +
+  theme_bw() + 
+  scale_colour_manual(values=c('blue','red'), labels=c('MaxInfo','MinInfo')) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+        axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+
+print(pic)
+dev.off()
