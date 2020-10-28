@@ -1,37 +1,53 @@
 ##### Data preparation #####
 # load packages
-#rm(list = ls())
 library(ggplot2)
 library(dplyr)
 library(xtable)
 library(haven)
-#patho<-"~/Desktop/jotarepos/corr_equilibrium/data/pilot_pair_9_13.csv" #here enter your data path
-#figures1<-"~/Desktop/jotarepos/corr_equilibrium/data/pair/"  #here enter your directory to store data.
+
+# add paths
 path1<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_8pxwav0s.csv" 
 path2<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_4d93o8o2.csv" 
 path3<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_p1cc2ryg.csv" 
-path4<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_pn1grluj.csv" 
-#path5<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_oxmqfz2b.csv" 
-#path6<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_e6am4g6s.csv" 
+path4<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_pn1grluj.csv"
+path5<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_4pk5wq8n.csv" 
+path6<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_dpmkufvg.csv" 
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"
 
-# load data 
+# load data from the first four sessions and add regret columns
 df_1 <- read.csv(path1, header = T, stringsAsFactors = FALSE)
-df_1 = select(df_1, 1:26)
+df_1 = select(df_1, 1:27)
 df_2 <- read.csv(path2, header = T, stringsAsFactors = FALSE)
-df_2 = select(df_2, 1:26)
+df_2 = select(df_2, 1:27)
 df_3 <- read.csv(path3, header = T, stringsAsFactors = FALSE)
-df_3 = select(df_3, 1:26)
+df_3 = select(df_3, 1:27)
 df_4 <- read.csv(path4, header = T, stringsAsFactors = FALSE)
-df_4 = select(df_4, 1:26)
-#df_5 <- read.csv(path5, header = T, stringsAsFactors = FALSE)
-#df_5 = select(df_5, 1:26)
-#df_6 <- read.csv(path6, header = T, stringsAsFactors = FALSE)
-#df_6 = select(df_6, 1:26)
+df_4 = select(df_4, 1:27)
 
-# create round variable in choice data and create full dataset
 full_data = rbind(df_1, df_2, df_3, df_4)
 rm(df_1, df_2, df_3, df_4)
+full_data = full_data %>% mutate(
+  p1_regret0 = 0,
+  p1_regret1 = 0,
+  p1_regret2 = 0,
+  p2_regret0 = 0,
+  p2_regret1 = 0,
+  p2_regret2 = 0,
+  p3_regret0 = 0,
+  p3_regret1 = 0,
+  p3_regret2 = 0
+)
+
+# load data from the rest of the sessions
+df_5 <- read.csv(path5, header = T, stringsAsFactors = FALSE)
+df_5 = select(df_5, 1:36)
+df_6 <- read.csv(path6, header = T, stringsAsFactors = FALSE)
+df_6 = select(df_6, 1:36)
+
+full_data = rbind(full_data, df_5, df_6)
+remove(df_5, df_6)
+
+# sort data and add period variable
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
 full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
 
@@ -175,8 +191,8 @@ for(row in seq(full_data$tick[full_data$game=="FP"])){
 }
 
 # create regret
-full_data =
-full_data %>%
+full_data = 
+  full_data %>%
   group_by(session_round_pair_id) %>%
   mutate(p1_strategy_0_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_0), 0))/cumsum(coalesce(lag(p1_strategy_0),0)),
          p1_strategy_1_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_1), 0))/cumsum(coalesce(lag(p1_strategy_1),0)),
@@ -184,12 +200,12 @@ full_data %>%
          p2_strategy_0_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_0), 0))/cumsum(coalesce(lag(p2_strategy_0),0)),
          p2_strategy_1_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_1), 0))/cumsum(coalesce(lag(p2_strategy_1),0)),
          p2_strategy_2_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p2_strategy_2), 0))/cumsum(coalesce(lag(p2_strategy_2),0)),
-         p3_strategy_0_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_0), 0))/cumsum(coalesce(lag(p3_strategy_0),0)),
-         p3_strategy_1_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_1), 0))/cumsum(coalesce(lag(p3_strategy_1),0)),
-         p3_strategy_2_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_2), 0))/cumsum(coalesce(lag(p3_strategy_2),0)),
+         #p3_strategy_0_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_0), 0))/cumsum(coalesce(lag(p3_strategy_0),0)),
+         #p3_strategy_1_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_1), 0))/cumsum(coalesce(lag(p3_strategy_1),0)),
+         #p3_strategy_2_regret= cumsum(coalesce(lag(p2_payoff), 0)*coalesce(lag(p3_strategy_2), 0))/cumsum(coalesce(lag(p3_strategy_2),0)),
          p1_switch = ifelse(abs(p1_strategy-lag(p1_strategy))>0, 1, 0),
          p2_switch = ifelse(abs(p2_strategy-lag(p2_strategy))>0, 1, 0),
-         p3_switch = ifelse(abs(p3_strategy-lag(p3_strategy))>0, 1, 0)
+         #p3_switch = ifelse(abs(p3_strategy-lag(p3_strategy))>0, 1, 0)
          )
 
 full_data$p1_strategy_0_regret[is.na(full_data$p1_strategy_0_regret)]<-0
@@ -198,16 +214,36 @@ full_data$p1_strategy_2_regret[is.na(full_data$p1_strategy_2_regret)]<-0
 full_data$p2_strategy_0_regret[is.na(full_data$p2_strategy_0_regret)]<-0
 full_data$p2_strategy_1_regret[is.na(full_data$p2_strategy_1_regret)]<-0
 full_data$p2_strategy_2_regret[is.na(full_data$p2_strategy_2_regret)]<-0
-full_data$p3_strategy_0_regret[is.na(full_data$p3_strategy_0_regret)]<-0
-full_data$p3_strategy_1_regret[is.na(full_data$p3_strategy_1_regret)]<-0
-full_data$p3_strategy_2_regret[is.na(full_data$p3_strategy_2_regret)]<-0
+#full_data$p3_strategy_0_regret[is.na(full_data$p3_strategy_0_regret)]<-0
+#full_data$p3_strategy_1_regret[is.na(full_data$p3_strategy_1_regret)]<-0
+#full_data$p3_strategy_2_regret[is.na(full_data$p3_strategy_2_regret)]<-0
 
-# #how many DD are not colluding? 
-# sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
-# sum(full_data$treatment[full_data$p1_payoff+full_data$p2_payoff==1000 & full_data$p1_regret>0 & full_data$p2_regret>0]=="BM_MinInfo_Pairwise_Discrete")/sum(full_data$treatment=="BM_MinInfo_Pairwise_Discrete")
+# update dta file
+write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_9_13.dta")
 
-# # update dta file
-# write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_9_13.dta")
+# # check the calculated regret and recorded regret
+# regret_data = filter(full_data, session_code == '4pk5wq8n' | session_code == 'dpmkufvg')
+# regret_data = regret_data %>% mutate(
+#   p1_0diff = p1_strategy_0_regret - p1_regret0,
+#   p1_1diff = p1_strategy_1_regret - p1_regret1,
+#   p1_2diff = p1_strategy_2_regret - p1_regret2,
+#   p2_0diff = p2_strategy_0_regret - p2_regret0,
+#   p2_1diff = p2_strategy_1_regret - p2_regret1,
+#   p2_2diff = p2_strategy_2_regret - p2_regret2
+# )
+# summary(regret_data$p1_0diff)
+# summary(regret_data$p1_1diff)
+# summary(regret_data$p1_2diff)
+# summary(regret_data$p2_0diff)
+# summary(regret_data$p2_1diff)
+# summary(regret_data$p2_2diff)
+# 
+# uniquepair = unique(regret_data$session_round_pair_id)
+# df_round = filter(regret_data, session_round_pair_id == uniquepair[1])
+# df_round = select(df_round, c(session_round_pair_id, period,
+#                               p1_strategy, p2_strategy, p1_regret0, p1_regret1, p1_regret2,
+#                               p1_strategy_0_regret, p1_strategy_1_regret, p1_strategy_2_regret))
+# write.csv(df_round, "D:/Dropbox/sample.csv")
 
 
 ##### Pair-level data (not used) #####
