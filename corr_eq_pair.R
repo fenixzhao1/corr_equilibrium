@@ -12,6 +12,8 @@ path3<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_p1cc2r
 path4<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_pn1grluj.csv"
 path5<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_4pk5wq8n.csv" 
 path6<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_dpmkufvg.csv" 
+path7<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_gcsgh2se.csv"
+path8<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_ju0cgjd9.csv"
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"
 
 # load data from the first four sessions and add regret columns
@@ -43,9 +45,13 @@ df_5 <- read.csv(path5, header = T, stringsAsFactors = FALSE)
 df_5 = select(df_5, 1:36)
 df_6 <- read.csv(path6, header = T, stringsAsFactors = FALSE)
 df_6 = select(df_6, 1:36)
+df_7 <- read.csv(path7, header = T, stringsAsFactors = FALSE)
+df_7 = select(df_7, 1:36)
+df_8 <- read.csv(path8, header = T, stringsAsFactors = FALSE)
+df_8 = select(df_8, 1:36)
 
-full_data = rbind(full_data, df_5, df_6)
-remove(df_5, df_6)
+full_data = rbind(full_data, df_5, df_6, df_7, df_8)
+remove(df_5, df_6, df_7, df_8)
 
 # sort data and add period variable
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
@@ -219,7 +225,7 @@ full_data$p2_strategy_2_regret[is.na(full_data$p2_strategy_2_regret)]<-0
 #full_data$p3_strategy_2_regret[is.na(full_data$p3_strategy_2_regret)]<-0
 
 # update dta file
-write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/data/pilot_9_13.dta")
+write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata.dta")
 
 # # check the calculated regret and recorded regret
 # regret_data = filter(full_data, session_code == '4pk5wq8n' | session_code == 'dpmkufvg')
@@ -1122,7 +1128,7 @@ for (i in 1:length(uniquetreatment)){
 }
 
 # data export
-xtable(transition_matrix[[1]], digits = 2, label = as.character(uniquetreatment[1]))
-xtable(transition_matrix[[2]], digits = 2, label = as.character(uniquetreatment[2]))
-xtable(transition_matrix[[3]], digits = 2, label = as.character(uniquetreatment[3]))
-xtable(transition_matrix[[4]], digits = 2, label = as.character(uniquetreatment[4]))
+xtable(transition_matrix[[1]], digits = 2, caption = as.character(uniquetreatment[1]))
+xtable(transition_matrix[[2]], digits = 2, caption = as.character(uniquetreatment[2]))
+xtable(transition_matrix[[3]], digits = 2, caption = as.character(uniquetreatment[3]))
+xtable(transition_matrix[[4]], digits = 2, caption = as.character(uniquetreatment[4]))
