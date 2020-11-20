@@ -320,6 +320,9 @@ for (i in 1:length(uniquetreatment)){
 
 df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]])
 
+# add new group id
+df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
+
 # update dta file
 write_dta(df_new, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata_pool.dta")
 

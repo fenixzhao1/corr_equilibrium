@@ -8,6 +8,7 @@ drop if round <= 2
 * encode ids
 encode session_round_pair_id, gen (cluster_pair_id)
 encode player_code, gen (cluster_subject_id)
+encode cluster_id, gen (cluster_pair_subject_id)
 
 * generate treatment dummies
 gen MaxInfo = 0
@@ -36,10 +37,14 @@ gen LatePeriod_avgpay2 = LatePeriod * player_avgpay2_standard
 
 
 ***** Avgpay analysis*****
-sort cluster_pair_id period player_role
+* sort the data and generate lag terms
+sort cluster_pair_subject_id period
+by cluster_pair_subject_id: gen lag_player_0 = player_strategy0[_n-1]
+by cluster_pair_subject_id: gen lag_player_1 = player_strategy1[_n-1]
+by cluster_pair_subject_id: gen lag_player_2 = player_strategy2[_n-1]
 
 * regression at pair level
-logit player_strategy0 ///
+logit player_strategy0 lag_player_0 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
 	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
 	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
@@ -47,7 +52,7 @@ logit player_strategy0 ///
 	  if game == "BM", cluster(cluster_pair_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 	  
-logit player_strategy0 ///
+logit player_strategy0 lag_player_0 lag_player_1 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
 	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
 	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
@@ -55,7 +60,7 @@ logit player_strategy0 ///
 	  if game == "MV", cluster(cluster_pair_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 	  
-logit player_strategy1 ///
+logit player_strategy1 lag_player_0 lag_player_1 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
 	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
 	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
@@ -64,7 +69,7 @@ logit player_strategy1 ///
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 	  
 * regression at subject level
-logit player_strategy0 ///
+logit player_strategy0 lag_player_0 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
 	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
 	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
@@ -72,7 +77,7 @@ logit player_strategy0 ///
 	  if game == "BM", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 	  
-logit player_strategy0 ///
+logit player_strategy0 lag_player_0 lag_player_1 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
 	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
 	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
@@ -80,7 +85,7 @@ logit player_strategy0 ///
 	  if game == "MV", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 	  
-logit player_strategy1 ///
+logit player_strategy1 lag_player_0 lag_player_1 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
 	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
 	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
