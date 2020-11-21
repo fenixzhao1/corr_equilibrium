@@ -55,7 +55,7 @@ remove(df_5, df_6, df_7, df_8)
 
 # sort data and add period variable
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
-full_data = full_data %>% filter(practice=="FALSE") %>% mutate(period = tick + 1)
+full_data = full_data %>% filter(round>2) %>% mutate(period = tick + 1)
 
 # unify matrices
 full_data$p1_strategy[full_data$game == 'BM2']<-1-full_data$p1_strategy[full_data$game == 'BM2']
@@ -678,6 +678,70 @@ for (i in 1:length(uniquetreatment)){
       ggtitle(title) + 
       theme_bw() + 
       scale_colour_manual(values=c('blue', 'red', 'black'), labels=c('others','DL', 'middle')) +
+      theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+            axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+            axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  }
+  
+  print(pic)
+  dev.off()
+}
+
+
+##### Type over supergames #####
+uniquetreatment = unique(full_data$treatment)
+
+# generate aggregate data over period by treatments
+aggregate_plot = list()
+for (i in 1:length(uniquetreatment)){
+  df_treatment = filter(full_data, treatment == uniquetreatment[i])
+  df_treatment = filter(df_treatment, period > 20)
+  # create dataset
+  aggregate_plot[[i]] = data.frame(
+    type_collude = tapply(df_treatment$type_collude, df_treatment$round, mean),
+    type_diagonal = tapply(df_treatment$type_diagonal, df_treatment$round, mean),
+    type_DL = tapply(df_treatment$type_DL, df_treatment$round, mean),
+    type_middle = tapply(df_treatment$type_middle, df_treatment$round, mean),
+    type_Nash = tapply(df_treatment$type_Nash, df_treatment$round, mean),
+    type_others = tapply(df_treatment$type_others, df_treatment$round, mean),
+    type_p1adv = tapply(df_treatment$type_p1adv, df_treatment$round, mean),
+    type_p2adv = tapply(df_treatment$type_p2adv, df_treatment$round, mean),
+    type_UL = tapply(df_treatment$type_UL, df_treatment$round, mean),
+    round = tapply(df_treatment$round, df_treatment$round, mean)
+  )
+  
+  # start to draw plot
+  title = paste('typeovergame', as.character(df_treatment$treatment[1]), sep = '_')
+  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+  file = paste(file, ".png", sep = "")
+  png(file, width = 1000, height = 500)
+  
+  # BM plot
+  if (df_treatment$game[1] == 'BM'){
+    pic = ggplot(data = aggregate_plot[[i]]) +
+      geom_line(aes(x=round, y=type_collude, colour='blue')) +
+      geom_line(aes(x=round, y=type_Nash, colour='red')) +
+      geom_line(aes(x=round, y=type_UL, colour='black')) +
+      scale_x_discrete(name='supergame', waiver(), limits=c(3,4,5,6,7,8,9,10)) +
+      scale_y_continuous(name='average mixture', limits=c(0,1)) +
+      ggtitle(title) + 
+      theme_bw() + 
+      scale_colour_manual(values=c('blue', 'red', 'black'), labels=c('UL', 'collude', 'either Nash')) +
+      theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+            axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+            axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  }
+  # MV plot
+  else{
+    pic = ggplot(data = aggregate_plot[[i]]) +
+      geom_line(aes(x=round, y=type_p1adv, colour='blue')) +
+      geom_line(aes(x=round, y=type_p2adv, colour='red')) +
+      geom_line(aes(x=round, y=type_diagonal, colour='black')) +
+      scale_x_discrete(name='supergame', waiver(), limits=c(3,4,5,6,7,8,9,10)) +
+      scale_y_continuous(name='average mixture', limits=c(0,1)) +
+      ggtitle(title) + 
+      theme_bw() + 
+      scale_colour_manual(values=c('blue', 'red', 'black'), labels=c('diagonal', 'p1_adv', 'p2_adv')) +
       theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
             axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
             axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
