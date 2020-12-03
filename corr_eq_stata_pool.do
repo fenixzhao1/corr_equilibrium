@@ -36,7 +36,45 @@ gen LatePeriod_avgpay1 = LatePeriod * player_avgpay1_standard
 gen LatePeriod_avgpay2 = LatePeriod * player_avgpay2_standard
 
 
-***** Avgpay analysis*****
+***** Avgpay analysis panel data version*****
+* sort the data and generate lag terms
+sort cluster_pair_subject_id period
+by cluster_pair_subject_id: gen lag_player_0 = player_strategy0[_n-1]
+by cluster_pair_subject_id: gen lag_player_1 = player_strategy1[_n-1]
+by cluster_pair_subject_id: gen lag_player_2 = player_strategy2[_n-1]
+
+xtset cluster_pair_subject_id period
+quietly xtlogit player_strategy0 lag_player_0 ///
+      player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
+	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
+	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
+	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
+	  if game == "BM", re vce(cluster cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+test player_avgpay0_standard = player_avgpay1_standard
+
+quietly xtlogit player_strategy0 lag_player_0 lag_player_1 ///
+      player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
+	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
+	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
+	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
+	  if game == "MV", re vce(cluster cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+test player_avgpay0_standard = player_avgpay1_standard
+test player_avgpay0_standard = player_avgpay2_standard
+	  
+quietly xtlogit player_strategy1 lag_player_0 lag_player_1 ///
+      player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
+	  MaxInfo MaxInfo_avgpay0 MaxInfo_avgpay1 MaxInfo_avgpay2 ///
+	  LateGame LateGame_avgpay0 LateGame_avgpay1 LateGame_avgpay2 ///
+	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
+	  if game == "MV", re vce(cluster cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+test player_avgpay1_standard = player_avgpay0_standard
+test player_avgpay1_standard = player_avgpay2_standard
+
+	  
+***** Avgpay analysis non-panel data *****
 * sort the data and generate lag terms
 sort cluster_pair_subject_id period
 by cluster_pair_subject_id: gen lag_player_0 = player_strategy0[_n-1]
