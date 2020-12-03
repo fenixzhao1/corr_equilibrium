@@ -51,7 +51,7 @@ quietly xtlogit player_strategy0 lag_player_0 ///
 	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
 	  if game == "BM", re vce(cluster cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
-test player_avgpay0_standard = player_avgpay1_standard
+test player_avgpay0_standard + player_avgpay1_standard = 0
 
 quietly xtlogit player_strategy0 lag_player_0 lag_player_1 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
@@ -60,8 +60,8 @@ quietly xtlogit player_strategy0 lag_player_0 lag_player_1 ///
 	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
 	  if game == "MV", re vce(cluster cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
-test player_avgpay0_standard = player_avgpay1_standard
-test player_avgpay0_standard = player_avgpay2_standard
+test player_avgpay0_standard + player_avgpay1_standard = 0
+test player_avgpay0_standard + player_avgpay2_standard = 0
 	  
 quietly xtlogit player_strategy1 lag_player_0 lag_player_1 ///
       player_avgpay0_standard player_avgpay1_standard player_avgpay2_standard ///
@@ -70,8 +70,8 @@ quietly xtlogit player_strategy1 lag_player_0 lag_player_1 ///
 	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
 	  if game == "MV", re vce(cluster cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
-test player_avgpay1_standard = player_avgpay0_standard
-test player_avgpay1_standard = player_avgpay2_standard
+test player_avgpay1_standard + player_avgpay0_standard = 0
+test player_avgpay1_standard + player_avgpay2_standard = 0
 
 	  
 ***** Avgpay analysis non-panel data *****
