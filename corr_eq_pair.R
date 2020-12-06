@@ -1271,3 +1271,52 @@ xtable(transition_matrix[[1]], digits = 2, caption = as.character(uniquetreatmen
 xtable(transition_matrix[[2]], digits = 2, caption = as.character(uniquetreatment[2]))
 xtable(transition_matrix[[3]], digits = 2, caption = as.character(uniquetreatment[3]))
 xtable(transition_matrix[[4]], digits = 2, caption = as.character(uniquetreatment[4]))
+
+
+##### Stay but positive regret & Switch to negative regret #####
+full_data = full_data %>% mutate(p1_current_regret = p1_strategy_0*p1_strategy_0_regret + p1_strategy_1*p1_strategy_1_regret + p1_strategy_2*p1_strategy_2_regret)
+full_data = full_data %>% mutate(p2_current_regret = p2_strategy_0*p2_strategy_0_regret + p2_strategy_1*p2_strategy_1_regret + p2_strategy_2*p2_strategy_2_regret)
+full_data = full_data %>% mutate(
+  p1_current_regret_frac = ifelse(game=='BM', p1_current_regret/600, p1_current_regret/200),
+  p1_current_regret_0 = p1_strategy_0_regret - p1_current_regret,
+  p1_current_regret_1 = p1_strategy_1_regret - p1_current_regret,
+  p1_current_regret_2 = p1_strategy_2_regret - p1_current_regret,
+  p1_regret_max = max(p1_current_regret_0, p1_current_regret_1, p1_current_regret_2),
+  p1_regret_max_frac = ifelse(game=='BM', p1_regret_max/600, p1_regret_max/200),
+  p2_current_regret_frac = ifelse(game=='BM', p2_current_regret/600, p2_current_regret/200),
+  p2_current_regret_0 = p2_strategy_0_regret - p2_current_regret,
+  p2_current_regret_1 = p2_strategy_1_regret - p2_current_regret,
+  p2_current_regret_2 = p2_strategy_2_regret - p2_current_regret,
+  p2_regret_max = max(p2_current_regret_0, p2_current_regret_1, p2_current_regret_2),
+  p2_regret_max_frac = ifelse(game=='BM', p2_regret_max/600, p2_regret_max/200),
+)
+
+# Stay but positive regret
+stay_p1 = filter(full_data, p1_switch == 0 & p1_regret_max > 0)
+stay_p2 = filter(full_data, p2_switch == 0 & p2_regret_max > 0)
+
+title = 'density of current choice avgpay when stay but positive regret'
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 1200, height = 500)
+par(mfrow=c(1,2))
+
+plot(density(stay_p1$p1_current_regret_frac), main = 'player 1: stay but exist positive regret')
+plot(density(stay_p2$p2_current_regret_frac), main = 'player 2: stay but exist positive regret')
+
+dev.off()
+
+# Switch to negative regret
+switch_p1 = filter(full_data, p1_switch == 1 & p1_regret_max == 0)
+switch_p2 = filter(full_data, p2_switch == 1 & p2_regret_max == 0)
+
+# title = 'density of current choice avgpay when switch but with negative regret'
+# file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
+# file = paste(file, ".png", sep = "")
+# png(file, width = 1200, height = 500)
+# par(mfrow=c(1,2))
+# 
+# plot(density(switch_p1$p1_current_regret_frac), main = 'player 1: switch but with negative regret')
+# plot(density(switch_p2$p2_current_regret_frac), main = 'player 2: switch but with negative regret')
+# 
+# dev.off()
