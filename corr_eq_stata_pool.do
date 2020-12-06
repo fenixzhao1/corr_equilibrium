@@ -36,7 +36,7 @@ gen LatePeriod_avgpay1 = LatePeriod * player_avgpay1_standard
 gen LatePeriod_avgpay2 = LatePeriod * player_avgpay2_standard
 
 
-***** Avgpay analysis panel data version*****
+***** Avgpay analysis panel data version *****
 * sort the data and generate lag terms
 sort cluster_pair_subject_id period
 by cluster_pair_subject_id: gen lag_player_0 = player_strategy0[_n-1]
@@ -130,4 +130,48 @@ logit player_strategy1 lag_player_0 lag_player_1 ///
 	  LatePeriod LatePeriod_avgpay0 LatePeriod_avgpay1 LatePeriod_avgpay2 ///
 	  if game == "MV", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+
+***** Directional regret data analysis *****
+* open dataset
+use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir.dta", clear
+
+* drop practice round
+drop if round <= 2
+
+* encode ids
+encode cluster_id, gen (cluster_subject_id)
+encode cluster_id_dir, gen (cluster_subject_direction_id)
+
+* generate treatment dummies
+gen MaxInfo = 0
+replace MaxInfo = 1 if information == "MaxInfo"
+
+* generate control variables
+gen LateGame = 0
+replace LateGame = 1 if round >= 7
+
+gen LatePeriod = 0
+replace LatePeriod = 1 if period >= 26
+
+* standardize avgpaydiff
+egen game_info_group = group(game_info)
+sort game_info_group
+
+by game_info_group: egen avgpaydiff_mean= mean(player_avgpaydiff)
+by game_info_group: egen avgpaydiff_sd  = sd(player_avgpaydiff)
+by game_info_group: gen avgpaydiff_std = (player_avgpaydiff-avgpaydiff_mean)/avgpaydiff_sd
+
+* generate intersection terms regarding avgpaydiff
+gen MaxInfo_avgpaydiff = MaxInfo * avgpaydiff_std
+gen LateGame_avgpaydiff = LateGame * avgpaydiff_std
+gen LatePeriod_avgpaydiff = LatePeriod * avgpaydiff_std
+
+* logit regressions
+logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
+
+logit player_switch_new avgpaydiff_std ///
+	  MaxInfo MaxInfo_avgpaydiff ///
+	  LateGame LateGame_avgpaydiff ///    
+	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
 
