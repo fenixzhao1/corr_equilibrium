@@ -146,11 +146,13 @@ encode cluster_id_dir, gen (cluster_subject_direction_id)
 * generate treatment dummies
 gen MaxInfo = 0
 replace MaxInfo = 1 if information == "MaxInfo"
+gen MV = 0
+replace MV = 1 if game == "MV"
+gen MaxInfo_MV = MaxInfo * MV
 
 * generate control variables
 gen LateGame = 0
 replace LateGame = 1 if round >= 7
-
 gen LatePeriod = 0
 replace LatePeriod = 1 if period >= 26
 
@@ -164,6 +166,7 @@ by game_info_group: gen avgpaydiff_std = (player_avgpaydiff-avgpaydiff_mean)/avg
 
 * generate intersection terms regarding avgpaydiff
 gen MaxInfo_avgpaydiff = MaxInfo * avgpaydiff_std
+gen MV_avgpaydiff = MV * avgpaydiff_std
 gen LateGame_avgpaydiff = LateGame * avgpaydiff_std
 gen LatePeriod_avgpaydiff = LatePeriod * avgpaydiff_std
 
@@ -172,6 +175,7 @@ logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
 
 logit player_switch_new avgpaydiff_std ///
 	  MaxInfo MaxInfo_avgpaydiff ///
+	  MV MV_avgpaydiff MaxInfo_MV ///
 	  LateGame LateGame_avgpaydiff ///    
 	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
 
