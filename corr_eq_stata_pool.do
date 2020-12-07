@@ -170,12 +170,29 @@ gen MV_avgpaydiff = MV * avgpaydiff_std
 gen LateGame_avgpaydiff = LateGame * avgpaydiff_std
 gen LatePeriod_avgpaydiff = LatePeriod * avgpaydiff_std
 
+* add indicator dummy for avgpaydiff_std>0 and intersection term
+gen positive_regret = 0
+replace positive_regret = 1 if avgpaydiff_std > 0
+gen positive_avgpaydiff = positive_regret * avgpaydiff_std
+
 * logit regressions
 logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+
+logit player_switch_new avgpaydiff_std positive_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 logit player_switch_new avgpaydiff_std ///
 	  MaxInfo MaxInfo_avgpaydiff ///
 	  MV MV_avgpaydiff MaxInfo_MV ///
 	  LateGame LateGame_avgpaydiff ///    
 	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
+	  MaxInfo MaxInfo_avgpaydiff ///
+	  MV MV_avgpaydiff MaxInfo_MV ///
+	  LateGame LateGame_avgpaydiff ///    
+	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
