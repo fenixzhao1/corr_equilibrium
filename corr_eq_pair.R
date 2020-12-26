@@ -14,6 +14,13 @@ path5<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_4pk5wq
 path6<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_dpmkufvg.csv" 
 path7<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_gcsgh2se.csv"
 path8<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_ju0cgjd9.csv"
+
+path9<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_wyrupym7.csv"
+path10<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_zepokgc0.csv"
+path11<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_rs7rl6lx.csv"
+
+path12<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_3_dlpeimt2.csv"
+path13<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_3_m1ix0n73.csv"
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"
 
 # load data from the first four sessions and add regret columns
@@ -49,10 +56,24 @@ df_7 <- read.csv(path7, header = T, stringsAsFactors = FALSE)
 df_7 = select(df_7, 1:36)
 df_8 <- read.csv(path8, header = T, stringsAsFactors = FALSE)
 df_8 = select(df_8, 1:36)
+df_9 <- read.csv(path9, header = T, stringsAsFactors = FALSE)
+df_9 = select(df_9, 1:36)
+df_10 <- read.csv(path10, header = T, stringsAsFactors = FALSE)
+df_10 = select(df_10, 1:36)
+df_11 <- read.csv(path11, header = T, stringsAsFactors = FALSE)
+df_11 = select(df_11, 1:36)
+df_12 <- read.csv(path12, header = T, stringsAsFactors = FALSE)
+df_12 = select(df_12, 1:36)
+df_13 <- read.csv(path13, header = T, stringsAsFactors = FALSE)
+df_13 = select(df_13, 1:36)
 
-full_data = rbind(full_data, df_5, df_6, df_7, df_8)
-rm(df_5, df_6, df_7, df_8)
-rm(path1, path2, path3, path4, path5, path6, path7, path8)
+full_data = rbind(full_data, df_5, df_6, df_7, df_8, df_9, df_10, df_11)
+rm(df_5, df_6, df_7, df_8, df_9, df_10, df_11)
+rm(path1, path2, path3, path4, path5, path6, path7, path8, path9, path10, path11)
+
+df_regret = rbind(df_12, df_13)
+rm(df_12, df_13, path12, path13)
+# full_data = df_regret # consider the dataset using the 3rd regret mode
 
 # sort data and add period variable
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
@@ -328,6 +349,7 @@ df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
 
 # update dta file
 write_dta(df_new, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata_pool.dta")
+rm(df_list, df_new, df_p1, df_p2, df)
 
 
 ##### Pool p1 and p2 data and reconstrcut the dataset to study switch and avgpaydiff #####
@@ -455,7 +477,8 @@ rm(df_bm01, df_bm10, df_mv01, df_mv02, df_mv10, df_mv12, df_mv20, df_mv21)
 df_new$cluster_id_dir = paste(df_new$cluster_id, df_new$direction)
 
 # update dta file
-write_dta(df_new, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata_pool_dir.dta")
+write_dta(df_new, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata_pool_dir_regret.dta")
+rm(df, df_new)
 
 
 ##### Pair-level data (not used) #####
@@ -1437,10 +1460,10 @@ plot(density(stay_p2$p2_current_regret_frac), main = 'player 2: stay but exist p
 
 dev.off()
 
-# Switch to negative regret
-switch_p1 = filter(full_data, p1_switch == 1 & p1_regret_max == 0)
-switch_p2 = filter(full_data, p2_switch == 1 & p2_regret_max == 0)
-
+# # Switch to negative regret
+# switch_p1 = filter(full_data, p1_switch == 1 & p1_regret_max == 0)
+# switch_p2 = filter(full_data, p2_switch == 1 & p2_regret_max == 0)
+# 
 # title = 'density of current choice avgpay when switch but with negative regret'
 # file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/writeup/figs/", title, sep = "")
 # file = paste(file, ".png", sep = "")

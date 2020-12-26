@@ -176,11 +176,11 @@ replace positive_regret = 1 if avgpaydiff_std > 0
 gen positive_avgpaydiff = positive_regret * avgpaydiff_std
 
 * logit regressions
-logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
-outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+*logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
+*outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 logit player_switch_new avgpaydiff_std positive_avgpaydiff, cluster(cluster_subject_id)
-outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 logit player_switch_new avgpaydiff_std ///
 	  MaxInfo MaxInfo_avgpaydiff ///
@@ -194,5 +194,58 @@ logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
 	  MV MV_avgpaydiff MaxInfo_MV ///
 	  LateGame LateGame_avgpaydiff ///    
 	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+
+***** Directional regret data analysis with the regret terms *****
+* open dataset
+use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir_regret.dta", clear
+
+* drop practice round
+drop if round <= 2
+
+* encode ids
+encode cluster_id, gen (cluster_subject_id)
+encode cluster_id_dir, gen (cluster_subject_direction_id)
+
+* generate treatment dummies
+gen MaxInfo = 0
+replace MaxInfo = 1 if information == "MaxInfo"
+gen MV = 0
+replace MV = 1 if game == "MV"
+gen MaxInfo_MV = MaxInfo * MV
+
+* generate control variables
+gen LateGame = 0
+replace LateGame = 1 if round >= 7
+gen LatePeriod = 0
+replace LatePeriod = 1 if period >= 26
+
+* standardize avgpaydiff
+egen game_info_group = group(game_info)
+sort game_info_group
+
+by game_info_group: egen regretdiff_mean= mean(player_avgpaydiff)
+by game_info_group: egen regretdiff_sd  = sd(player_avgpaydiff)
+by game_info_group: gen regretdiff_std = (player_avgpaydiff-regretdiff_mean)/regretdiff_sd
+
+* generate intersection terms regarding avgpaydiff
+gen MaxInfo_regretdiff = MaxInfo * regretdiff_std
+gen MV_regretdiff = MV * regretdiff_std
+gen LateGame_regretdiff = LateGame * regretdiff_std
+gen LatePeriod_regretdiff = LatePeriod * regretdiff_std
+
+* add indicator dummy for avgpaydiff_std>0 and intersection term
+gen positive_regret = 0
+replace positive_regret = 1 if regretdiff_std > 0
+gen positive_regretdiff = positive_regret * regretdiff_std
+
+* logit regressions
+logit player_switch_new regretdiff_std positive_regretdiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+
+logit player_switch_new regretdiff_std positive_regretdiff ///
+	  LateGame LateGame_regretdiff ///    
+	  LatePeriod LatePeriod_regretdiff, cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
