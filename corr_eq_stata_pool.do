@@ -196,6 +196,17 @@ logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
 	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
+* OLS regression
+reg player_switch_new avgpaydiff_std positive_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+
+reg player_switch_new avgpaydiff_std positive_avgpaydiff ///
+	MaxInfo MaxInfo_avgpaydiff ///
+	MV MV_avgpaydiff MaxInfo_MV ///
+	LateGame LateGame_avgpaydiff ///    
+	LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
 
 ***** Directional regret data analysis with the regret terms *****
 * open dataset
@@ -249,3 +260,11 @@ logit player_switch_new regretdiff_std positive_regretdiff ///
 	  LatePeriod LatePeriod_regretdiff, cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
+* OLS regression
+reg player_switch_new regretdiff_std positive_regretdiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+
+reg player_switch_new regretdiff_std positive_regretdiff ///
+	LateGame LateGame_regretdiff ///    
+	LatePeriod LatePeriod_regretdiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
