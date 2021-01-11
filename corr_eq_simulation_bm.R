@@ -3,7 +3,6 @@ library(ggplot2)
 
 # set up the payoff matrix
 pay_chicken = matrix(c(100,200,600,500),2,2) # payoff matrix 2x2
-pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 
 
 # build the payoff function (chicken, can be switched to MV)
