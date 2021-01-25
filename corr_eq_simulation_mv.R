@@ -113,9 +113,9 @@ decision = function(mu, iteration, my_history, your_history){
 
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
-n = 2000 # number of periods in each simulation
-sim = 50 # number of simulations
-experiment = 100 # number of experimentation periods where players randomly make decisions
+n = 1000 # number of periods in each simulation
+sim = 20 # number of simulations
+experiment = 1 # number of experimentation periods where players randomly make decisions
 
 # run the simulations
 for (s in 1:sim){
