@@ -1,6 +1,7 @@
 ##### Package and Payoff #####
 # add package
 library(ggplot2)
+library(xtable)
 
 # set up the payoff matrix
 pay_chicken = matrix(c(100,200,600,500),2,2) # payoff matrix 2x2
@@ -262,7 +263,7 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
 # set up the parameters for the simulation
 mu = 1500 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
-sim = 20 # number of simulations
+sim = 100 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
 
 # set up the joint density matrix
@@ -281,8 +282,8 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r_logit(mu, c(1,1), i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r_logit(mu, c(1,1), i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
@@ -299,7 +300,7 @@ for (s in 1:sim){
   )
   
   # graph the decision making
-  title = paste('logit_hm2000r', 'BM', 'sim', as.character(s), sep = '_')
+  title = paste('hm2000r', 'BM', 'sim', as.character(s), sep = '_')
   file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
   file = paste(file, ".png", sep = "")
   png(file, width = 400, height = 200)
@@ -323,5 +324,5 @@ for (s in 1:sim){
 
 # normalize the joint density matrix
 joint_density = round(joint_density/sum(joint_density), 3)
-joint_density
+xtable(joint_density, caption = title)
 
