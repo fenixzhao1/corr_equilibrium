@@ -55,18 +55,12 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
     if (regret1 == max(regret1, regret2, regret3)){return(1)}
     else{
       # switch with a positive probability from 1 to 2 or from 1 to 3
-      seed2 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob2 = (regret2-regret1)/mu
-      seed3 = runif(1,0,1)
       prob3 = (regret3-regret1)/mu
-      if (seed2<=prob2 & seed3>prob3){return(2)}
-      else if (seed2>prob2 & seed3<=prob3){return(3)}
-      else if (seed2>prob2 & seed3>prob3){return(1)}
-      else{
-        if (prob2>prob3){return(2)}
-        else if (prob2<prob3){return(3)}
-        else{return(sample(c(2,3), 1))}
-      }
+      if (seed <= prob2){return(2)}
+      else if (seed <= prob2 + prob3){return(3)}
+      else{return(1)}
     }
   }
   
@@ -75,18 +69,12 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
     if (regret2 == max(regret1, regret2, regret3)){return(2)}
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
-      seed1 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob1 = (regret1-regret2)/mu
-      seed3 = runif(1,0,1)
       prob3 = (regret3-regret2)/mu
-      if (seed1<=prob1 & seed3>prob3){return(1)}
-      else if (seed1>prob1 & seed3<=prob3){return(3)}
-      else if (seed1>prob1 & seed3>prob3){return(2)}
-      else{
-        if (prob1>prob3){return(1)}
-        else if (prob1<prob3){return(3)}
-        else{return(sample(c(1,3), 1))}
-      }
+      if (seed <= prob1){return(1)}
+      else if (seed <= prob1 + prob3){return(3)}
+      else{return(2)}
     }
   }
   
@@ -95,18 +83,12 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
     if (regret3 == max(regret1, regret2, regret3)){return(3)}
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
-      seed1 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob1 = (regret1-regret3)/mu
-      seed2 = runif(1,0,1)
       prob2 = (regret2-regret3)/mu
-      if (seed1<=prob1 & seed2>prob2){return(1)}
-      else if (seed1>prob1 & seed2<=prob2){return(2)}
-      else if (seed1>prob1 & seed2>prob2){return(3)}
-      else{
-        if (prob1>prob2){return(1)}
-        else if (prob1<prob2){return(2)}
-        else{return(sample(c(1,2), 1))}
-      }
+      if (seed <= prob1){return(1)}
+      else if (seed <= prob1 + prob2){return(2)}
+      else{return(3)}
     }
   }
 }
@@ -177,18 +159,12 @@ decision_avgpay = function(mu, iteration, my_history, your_history){
     if (regret1 == max(regret1, regret2, regret3)){return(1)}
     else{
       # switch with a positive probability from 1 to 2 or from 1 to 3
-      seed2 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob2 = (regret2-regret1)/mu
-      seed3 = runif(1,0,1)
       prob3 = (regret3-regret1)/mu
-      if (seed2<=prob2 & seed3>prob3){return(2)}
-      else if (seed2>prob2 & seed3<=prob3){return(3)}
-      else if (seed2>prob2 & seed3>prob3){return(1)}
-      else{
-        if (prob2>prob3){return(2)}
-        else if (prob2<prob3){return(3)}
-        else{return(sample(c(2,3), 1))}
-      }
+      if (seed <= prob2){return(2)}
+      else if (seed <= prob2 + prob3){return(3)}
+      else{return(1)}
     }
   }
   
@@ -197,18 +173,12 @@ decision_avgpay = function(mu, iteration, my_history, your_history){
     if (regret2 == max(regret1, regret2, regret3)){return(2)}
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
-      seed1 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob1 = (regret1-regret2)/mu
-      seed3 = runif(1,0,1)
       prob3 = (regret3-regret2)/mu
-      if (seed1<=prob1 & seed3>prob3){return(1)}
-      else if (seed1>prob1 & seed3<=prob3){return(3)}
-      else if (seed1>prob1 & seed3>prob3){return(2)}
-      else{
-        if (prob1>prob3){return(1)}
-        else if (prob1<prob3){return(3)}
-        else{return(sample(c(1,3), 1))}
-      }
+      if (seed <= prob1){return(1)}
+      else if (seed <= prob1 + prob3){return(3)}
+      else{return(2)}
     }
   }
   
@@ -217,18 +187,12 @@ decision_avgpay = function(mu, iteration, my_history, your_history){
     if (regret3 == max(regret1, regret2, regret3)){return(3)}
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
-      seed1 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob1 = (regret1-regret3)/mu
-      seed2 = runif(1,0,1)
       prob2 = (regret2-regret3)/mu
-      if (seed1<=prob1 & seed2>prob2){return(1)}
-      else if (seed1>prob1 & seed2<=prob2){return(2)}
-      else if (seed1>prob1 & seed2>prob2){return(3)}
-      else{
-        if (prob1>prob2){return(1)}
-        else if (prob1<prob2){return(2)}
-        else{return(sample(c(1,2), 1))}
-      }
+      if (seed <= prob1){return(1)}
+      else if (seed <= prob1 + prob2){return(2)}
+      else{return(3)}
     }
   }
 }
@@ -293,24 +257,18 @@ decision_hm2000r = function(mu, iteration, my_history, your_history){
   regret1 = regret_hm2000r(1, iteration, my_history, your_history)
   regret2 = regret_hm2000r(2, iteration, my_history, your_history)
   regret3 = regret_hm2000r(3, iteration, my_history, your_history)
-  
+
   # calculate the decision when my last choice is 1
   if (lastchoice == 1){
     if (regret1 == max(regret1, regret2, regret3)){return(1)}
     else{
       # switch with a positive probability from 1 to 2 or from 1 to 3
-      seed2 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob2 = (regret2-regret1)/mu
-      seed3 = runif(1,0,1)
       prob3 = (regret3-regret1)/mu
-      if (seed2<=prob2 & seed3>prob3){return(2)}
-      else if (seed2>prob2 & seed3<=prob3){return(3)}
-      else if (seed2>prob2 & seed3>prob3){return(1)}
-      else{
-        if (prob2>prob3){return(2)}
-        else if (prob2<prob3){return(3)}
-        else{return(sample(c(2,3), 1))}
-      }
+      if (seed <= prob2){return(2)}
+      else if (seed <= prob2 + prob3){return(3)}
+      else{return(1)}
     }
   }
   
@@ -319,18 +277,12 @@ decision_hm2000r = function(mu, iteration, my_history, your_history){
     if (regret2 == max(regret1, regret2, regret3)){return(2)}
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
-      seed1 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob1 = (regret1-regret2)/mu
-      seed3 = runif(1,0,1)
       prob3 = (regret3-regret2)/mu
-      if (seed1<=prob1 & seed3>prob3){return(1)}
-      else if (seed1>prob1 & seed3<=prob3){return(3)}
-      else if (seed1>prob1 & seed3>prob3){return(2)}
-      else{
-        if (prob1>prob3){return(1)}
-        else if (prob1<prob3){return(3)}
-        else{return(sample(c(1,3), 1))}
-      }
+      if (seed <= prob1){return(1)}
+      else if (seed <= prob1 + prob3){return(3)}
+      else{return(2)}
     }
   }
   
@@ -339,18 +291,12 @@ decision_hm2000r = function(mu, iteration, my_history, your_history){
     if (regret3 == max(regret1, regret2, regret3)){return(3)}
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
-      seed1 = runif(1,0,1)
+      seed = runif(1,0,1)
       prob1 = (regret1-regret3)/mu
-      seed2 = runif(1,0,1)
       prob2 = (regret2-regret3)/mu
-      if (seed1<=prob1 & seed2>prob2){return(1)}
-      else if (seed1>prob1 & seed2<=prob2){return(2)}
-      else if (seed1>prob1 & seed2>prob2){return(3)}
-      else{
-        if (prob1>prob2){return(1)}
-        else if (prob1<prob2){return(2)}
-        else{return(sample(c(1,2), 1))}
-      }
+      if (seed <= prob1){return(1)}
+      else if (seed <= prob1 + prob2){return(2)}
+      else{return(3)}
     }
   }
 }
@@ -401,8 +347,8 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r_logit(mu, c(1,1,1), i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r_logit(mu, c(1,1,1), i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
@@ -424,7 +370,7 @@ for (s in 1:sim){
   )
   
   # graph the decision making
-  title = paste('logit_hm2000r', 'MV', 'sim', as.character(s), sep = '_')
+  title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
   file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
   file = paste(file, ".png", sep = "")
   png(file, width = 600, height = 200)
