@@ -1,6 +1,7 @@
 ##### Packages and Payoff #####
 # add package
 library(ggplot2)
+library(xtable)
 
 # set up the payoff matrix
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
@@ -327,12 +328,15 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
 ##### Simulation Output #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
-n = 500 # number of periods in each simulation
-sim = 100 # number of simulations
-experiment = 100 # number of experimentation periods where players randomly make decisions
+n = 5000 # number of periods in each simulation
+sim = 5 # number of simulations
+experiment = 1 # number of experimentation periods where players randomly make decisions
 
 # set up the joint density matrix
-joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
+joint_density_all = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
+
+# set up the joint density matrix for each simulation
+joint_density = list()
 
 # run the simulations
 for (s in 1:sim){
@@ -345,22 +349,28 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
+  # set up the joint density matrix for the current simulation
+  joint_density[[s]] = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
+  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
+    if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
+    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[[s]][1,2]=joint_density[[s]][1,2]+1}
+    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[[s]][1,3]=joint_density[[s]][1,3]+1}
+    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[[s]][2,1]=joint_density[[s]][2,1]+1}
+    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[[s]][2,2]=joint_density[[s]][2,2]+1}
+    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[[s]][2,3]=joint_density[[s]][2,3]+1}
+    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[[s]][3,1]=joint_density[[s]][3,1]+1}
+    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[[s]][3,2]=joint_density[[s]][3,2]+1}
+    else{joint_density[[s]][3,3]=joint_density[[s]][3,3]+1}
   }
+  
+  # normalize the frequency to probability
+  joint_density[[s]] = round(joint_density[[s]]/sum(joint_density[[s]]), 3)
   
   # create the dataset for figures
   df = data.frame(
@@ -373,7 +383,7 @@ for (s in 1:sim){
   title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
   file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
   file = paste(file, ".png", sep = "")
-  png(file, width = 600, height = 200)
+  png(file, width = 1500, height = 400)
   
   pic = ggplot(data = df) +
     geom_line(aes(x=period, y=p1_choice, colour='blue')) +
@@ -391,7 +401,12 @@ for (s in 1:sim){
   dev.off()
 }
 
-# normalize the joint density matrix
-joint_density = round(joint_density/sum(joint_density), 3)
-xtable(joint_density, caption = title)
+# finalize the joint density matrix
+xtable(joint_density[[1]])
+
+for (a in 1:sim){
+  joint_density_all = joint_density_all + joint_density[[a]]
+}
+joint_density_all = joint_density_all / sim
+xtable(joint_density_all, caption = title)
 
