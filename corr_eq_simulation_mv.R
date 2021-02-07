@@ -328,8 +328,8 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
 ##### Simulation Output #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
-n = 5000 # number of periods in each simulation
-sim = 5 # number of simulations
+n = 2000 # number of periods in each simulation
+sim = 50 # number of simulations
 experiment = 1 # number of experimentation periods where players randomly make decisions
 
 # set up the joint density matrix
