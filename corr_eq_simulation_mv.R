@@ -325,7 +325,120 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
 }
 
 
-##### Simulation Output #####
+##### HM2001 #####
+regret_hm2001 = function(m, iteration, my_history, your_history, my_prob_last, my_prob_other){
+  
+  # calculate the length of history
+  len_history = iteration - 1
+  
+  # create a regret payoff term
+  my_regret = 0
+  period = 0
+  
+  # loop over previous periods to calculate the total historical payoff
+  for (i in 1:len_history){
+    if (my_history[i] == m){
+      my_regret = my_regret + payoff(my_history[i], your_history[i])*((my_prob_last)/(my_prob_other))
+    }
+  }
+  
+  # return the average historical payoff
+  if (period == 0){return(0)}
+  else{
+    return(my_regret/len_history)
+  }  
+}
+
+
+# build the revised avgpay
+regret_avgpayr = function(m, iteration, my_history, your_history){
+  
+  # calculate the length of history
+  len_history = iteration - 1
+  
+  # create a regret payoff term
+  my_regret = 0
+  period = 0
+  
+  # loop over previous periods to calculate the total historical payoff
+  for (i in 1:len_history){
+    if (my_history[i] == m){
+      my_regret = my_regret + payoff(my_history[i], your_history[i])
+      period = period + 1
+    }
+  }
+  
+  # return the average historical payoff
+  if (period == 0){return(0)}
+  else{
+    return(my_regret/len_history)
+  }
+}
+
+
+# build the decision function based on HM2001
+decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history, my_prob_1,  my_prob_2){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_avgpayr(1, iteration, my_history, your_history)
+  regret2 = regret_avgpayr(2, iteration, my_history, your_history)
+  regret3 = regret_avgpayr(3, iteration, my_history, your_history)
+  regret2m1 = regret_hm2001(2, iteration, my_history, your_history, my_prob_1, my_prob_2)
+  regret3m1 = regret_hm2001(3, iteration, my_history, your_history, my_prob_1, 1-my_prob_1-my_prob_2)
+  regret1m2 = regret_hm2001(1, iteration, my_history, your_history, my_prob_2,  my_prob_1)
+  regret3m2 = regret_hm2001(3, iteration, my_history, your_history, my_prob_2, 1-my_prob_1-my_prob_2)
+  regret1m3 = regret_hm2001(1, iteration, my_history, your_history, 1-my_prob_1-my_prob_2,  my_prob_1)
+  regret2m3 = regret_hm2001(2, iteration, my_history, your_history, 1-my_prob_1-my_prob_2, my_prob_2)
+  
+  seed = runif(1,0,1)
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    cj2 = regret2m1 - regret1
+    q2 = max(cj2,0)
+    psw2 = (1-delta/(iteration^gamma))*min(q2/mu,1/2)+(delta/(iteration^gamma))*(1/3)
+    
+    cj3 = regret3m1 - regret1
+    q3 = max(cj3,0)
+    psw3 = (1-delta/(iteration^gamma))*min(q3/mu,1/2)+(delta/(iteration^gamma))*(1/3)
+    
+    if (seed <= psw2){return(c(2,1-psw2-psw3,psw2))}
+    else if (seed>psw2 & seed<=psw3+psw2){return(c(3,1-psw2-psw3,psw2))}
+    else{return(c(1,1-psw2-psw3,psw2))}
+  }
+  else if (lastchoice == 2){
+    cj3 = regret3m2 - regret2
+    q3 = max(cj3,0)
+    psw3 = (1-delta/(iteration^gamma))*min(q3/mu,1/2)+(delta/(iteration^gamma))*(1/3)
+    
+    cj1 = regret1m2 - regret2
+    q1 = max(cj1,0)
+    psw1 = (1-delta/(iteration^gamma))*min(q1/mu,1/2)+(delta/(iteration^gamma))*(1/3)
+    
+    if (seed <= psw1){return(c(1,psw1,1-psw3-psw1))}
+    else if (seed>psw1 & seed<=psw3+psw1){return(c(3,psw1,1-psw3-psw1))}
+    else{return(c(2,psw1,1-psw3-psw1))}
+  }
+  else {
+    cj2 = regret2m3 - regret3
+    q2 = max(cj2,0)
+    psw2 = (1-delta/(iteration^gamma))*min(q2/mu,1/2)+(delta/(iteration^gamma))*(1/3)
+    
+    cj1 = regret1m3 - regret3
+    q1 = max(cj1,0)
+    psw1 = (1-delta/(iteration^gamma))*min(q1/mu,1/2)+(delta/(iteration^gamma))*(1/3)
+    
+    if (seed <= psw1){return(c(1,psw1,psw2))}
+    else if (seed>psw1 & seed<= psw2+psw1){return(c(2,psw1,psw2))}
+    else{return(c(3,psw1,psw2))}
+  }
+  
+}    
+
+
+##### Simulation pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
 n = 2000 # number of periods in each simulation
@@ -381,6 +494,103 @@ for (s in 1:sim){
   
   # graph the decision making
   title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
+  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
+  file = paste(file, ".png", sep = "")
+  png(file, width = 1500, height = 400)
+  
+  pic = ggplot(data = df) +
+    geom_line(aes(x=period, y=p1_choice, colour='blue')) +
+    geom_line(aes(x=period, y=p2_choice, colour='red')) +
+    scale_x_discrete(name='period', waiver()) +
+    scale_y_continuous(name='decision', limits=c(1,3)) +
+    ggtitle(title) + 
+    theme_bw() + 
+    scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
+    theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+          axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+          axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  
+  print(pic)
+  dev.off()
+}
+
+# finalize the joint density matrix
+xtable(joint_density[[1]])
+
+for (a in 1:sim){
+  joint_density_all = joint_density_all + joint_density[[a]]
+}
+joint_density_all = joint_density_all / sim
+xtable(joint_density_all, caption = title)
+
+
+##### Simulation pair level graph and joint density - HM2001 #####
+# set up the parameters for the simulation
+mu = 1000 # HM2000 probability parameter
+delta = 0.01
+gama = 0.0
+n = 3000 # number of periods in each simulation
+sim = 1 # number of simulations
+experiment = 1 # number of experimentation periods where players randomly make decisions
+
+# set up the joint density matrix
+joint_density_all = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
+
+# set up the joint density matrix for each simulation
+joint_density = list()
+
+# run the simulations
+for (s in 1:sim){
+  # set up the probability choices for HM2001
+  prob1_p1 = rep(0.33, n)
+  prob2_p1 = rep(0.33, n)
+  prob1_p2 = rep(0.33, n)
+  prob2_p2 = rep(0.33, n)
+  
+  # set up the vectors for choices and game parameters
+  history_p1 = rep(0, n)
+  history_p2 = rep(0, n)
+  
+  # calculate the experimentation periods with random starting decisions
+  history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
+  history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
+  
+  # set up the joint density matrix for the current simulation
+  joint_density[[s]] = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
+  
+  # calculate the rest of the decisions to n periods
+  for (i in (experiment+1):n){
+    history_p1[i] = decision_hm2001(mu, delta, gama, i, history_p1, history_p2, prob1_p1, prob2_p1 )[1]
+    history_p2[i] = decision_hm2001(mu, delta, gama, i, history_p2, history_p1, prob1_p2, prob2_p2 )[1]
+    prob1_p1[i] = decision_hm2001(mu, delta, gama, i, history_p1, history_p2, prob1_p1, prob2_p1 )[2]
+    prob2_p1[i] = decision_hm2001(mu, delta, gama, i, history_p1, history_p2, prob1_p1, prob2_p1 )[3]
+    prob1_p2[i] = decision_hm2001(mu, delta, gama, i, history_p2, history_p1, prob1_p2, prob2_p2 )[2]
+    prob2_p2[i] = decision_hm2001(mu, delta, gama, i, history_p2, history_p1, prob1_p2, prob2_p2 )[3]
+    
+    # update the joint density matrix
+    if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
+    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[[s]][1,2]=joint_density[[s]][1,2]+1}
+    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[[s]][1,3]=joint_density[[s]][1,3]+1}
+    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[[s]][2,1]=joint_density[[s]][2,1]+1}
+    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[[s]][2,2]=joint_density[[s]][2,2]+1}
+    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[[s]][2,3]=joint_density[[s]][2,3]+1}
+    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[[s]][3,1]=joint_density[[s]][3,1]+1}
+    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[[s]][3,2]=joint_density[[s]][3,2]+1}
+    else{joint_density[[s]][3,3]=joint_density[[s]][3,3]+1}
+  }
+  
+  # normalize the frequency to probability
+  joint_density[[s]] = round(joint_density[[s]]/sum(joint_density[[s]]), 3)
+  
+  # create the dataset for figures
+  df = data.frame(
+    p1_choice = history_p1,
+    p2_choice = history_p2,
+    period = 1:n
+  )
+  
+  # graph the decision making
+  title = paste('hm2001', 'MV', 'sim', as.character(s), sep = '_')
   file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
   file = paste(file, ".png", sep = "")
   png(file, width = 1500, height = 400)
