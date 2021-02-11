@@ -172,8 +172,8 @@ decision_avgpay_logit = function(mu, beta, iteration, my_history, your_history){
   
   # randomly determine the decision
   seed = runif(1,0,1)
-  if (seed <= prob[1]){return(1)}
-  else{return(2)}
+  if (seed <= prob[1]){return(c(1,prob[1],prob[2]))}
+  else{return(c(2,prob[1], prob[2]))}
 }
 
 
@@ -340,7 +340,7 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
 }    
 
 
-##### Simulation pair level graph and joint density - HM2000 and avgpay #####
+##### Pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1500 # HM2000 probability parameter
 n = 2000 # number of periods in each simulation
@@ -421,7 +421,7 @@ joint_density_all = joint_density_all / sim
 xtable(joint_density_all, caption = title)
 
 
-##### Simulation pair level graph and joint density - HM2001 #####
+##### Pair level graph and joint density - HM2001 #####
 # set up the parameters for the simulation
 mu = 1500 # HM2000 probability parameter
 n = 10000 # number of periods in each simulation
@@ -509,4 +509,108 @@ joint_density_all = joint_density_all / sim
 xtable(joint_density_all, caption = title)
 
 
+##### Probability of converging to collusion #####
+# set up the parameters for the simulation
+mu = 1500 # HM2000 probability parameter
+n = 1000 # number of periods in each simulation
+sim = 100 # number of simulations
+experiment = 100 # number of experimentation periods where players randomly make decisions
+beta = 0.035
 
+# set up the joint density matrix
+joint_density_all = matrix(c(0,0,0,0),2,2)
+
+# set up the joint density matrix and history data for each simulation
+joint_density = list()
+history_all = list()
+
+# run the simulations
+for (s in 1:sim){
+  
+  # set up the vectors for choices and game parameters
+  history_p1 = rep(0, n)
+  history_p2 = rep(0, n)
+  prob_p1_1 = rep(0, n)
+  prob_p1_2 = rep(0, n)
+  prob_p2_1 = rep(0, n)
+  prob_p2_2 = rep(0, n)
+  
+  # calculate the experimentation periods with random starting decisions
+  history_p1[1:experiment] = sample(1:2, experiment, replace = TRUE)
+  history_p2[1:experiment] = sample(1:2, experiment, replace = TRUE)
+  
+  # set up the joint density matrix for the current simulation
+  joint_density[[s]] = matrix(c(0,0,0,0),2,2)
+  
+  # calculate the rest of the decisions to n periods
+  for (i in (experiment+1):n){
+    history_p1[i] = decision_avgpay_logit(mu, c(beta,beta), i, history_p1, history_p2)[1]
+    history_p2[i] = decision_avgpay_logit(mu, c(beta,beta), i, history_p2, history_p1)[1]
+    prob_p1_1[i] = decision_avgpay_logit(mu, c(beta,beta), i, history_p1, history_p2)[2]
+    prob_p1_2[i] = decision_avgpay_logit(mu, c(beta,beta), i, history_p1, history_p2)[3]
+    prob_p2_1[i] = decision_avgpay_logit(mu, c(beta,beta), i, history_p2, history_p1)[2]
+    prob_p2_2[i] = decision_avgpay_logit(mu, c(beta,beta), i, history_p2, history_p1)[3]
+    
+    # update the joint density matrix
+    if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
+    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[[s]][1,2]=joint_density[[s]][1,2]+1}
+    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[[s]][2,1]=joint_density[[s]][2,1]+1}
+    else{joint_density[[s]][2,2]=joint_density[[s]][2,2]+1}
+  }
+  
+  # normalize the frequency to probability
+  joint_density[[s]] = round(joint_density[[s]]/sum(joint_density[[s]]), 3)
+  
+  # create the dataset
+  df = data.frame(
+    p1_choice = history_p1,
+    p2_choice = history_p2,
+    p1_prob_1 = prob_p1_1,
+    p1_prob_2 = prob_p1_2,
+    p2_prob_1 = prob_p2_1,
+    p2_prob_2 = prob_p2_2,
+    period = 1:n
+  )
+  history_all[[s]] = df
+}
+
+# finalize the joint density matrix
+for (a in 1:sim){
+  joint_density_all = joint_density_all + joint_density[[a]]
+}
+joint_density_all = joint_density_all / sim
+xtable(joint_density_all)
+
+# check the probability of playing collusion
+length = rep(0, sim)
+df_m = data.frame(nash1 = length, nash2 = length, collude = length)
+for (j in 1:sim){
+  
+  df_m$nash1[j] = joint_density[[j]][1,2]
+  df_m$nash2[j] = joint_density[[j]][2,1]
+  df_m$collude[j] = joint_density[[j]][2,2]
+}
+
+# graph the cdf
+title = paste('cdf of playing NE and collusion', 'b', as.character(beta), sep = ' ')
+file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
+file = paste(file, ".png", sep = "")
+png(file, width = 700, height = 400)
+
+pic = ggplot(data = df_m) +
+  stat_ecdf(geom="step", aes(x=collude, colour='blue')) +
+  stat_ecdf(geom="step", aes(x=nash1, colour='red')) +
+  stat_ecdf(geom="step", aes(x=nash2, colour='green')) +
+  scale_x_continuous(name='prob of play', waiver(), limits=c(0,1)) +
+  scale_y_continuous(name='density') +
+  ggtitle(title) +
+  theme_bw() + 
+  scale_colour_manual(values=c('blue','red', 'green'), label=c('collude', 'nash2', 'nash1')) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+        axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+
+print(pic)
+dev.off()
+
+write.csv(history_all[[3]], file = 'D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/sample.csv')
