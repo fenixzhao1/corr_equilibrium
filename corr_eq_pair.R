@@ -980,6 +980,7 @@ for (i in 1:length(uniquetreatment)){
       ggtitle(title) +
       scale_x_discrete(name='Pair ID', waiver()) +
       scale_y_continuous(name='strategy profile type') +
+      scale_fill_manual(values=c("collude"="#D72B13", "Nash"="#4B54AF", "UL"="grey")) +
       theme_bw() +
       theme(plot.title = element_text(hjust = 0.5, size = 30),
             axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25),
@@ -1005,6 +1006,7 @@ for (i in 1:length(uniquetreatment)){
       ggtitle(title) +
       scale_x_discrete(name='Pair ID', waiver()) +
       scale_y_continuous(name='strategy profile type') +
+      scale_fill_manual(values=c("p1 advantage"="#ECCF05", "p2 advantage"="#7BBE56", 'diagonal'='grey')) +
       theme_bw() +
       theme(plot.title = element_text(hjust = 0.5, size = 30),
             axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25),

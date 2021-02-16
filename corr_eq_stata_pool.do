@@ -132,7 +132,7 @@ logit player_strategy1 lag_player_0 lag_player_1 ///
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 
-***** Directional regret data analysis *****
+***** Directional regret data analysis (hist avg) *****
 * open dataset
 use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir.dta", clear
 
@@ -197,18 +197,26 @@ logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
-reg player_switch_new avgpaydiff_std positive_avgpaydiff, cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std positive_avgpaydiff if game == "BM", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std positive_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
-	MV MV_avgpaydiff MaxInfo_MV ///
 	LateGame LateGame_avgpaydiff ///    
-	LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
+	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+reg player_switch_new avgpaydiff_std positive_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+reg player_switch_new avgpaydiff_std positive_avgpaydiff ///
+	MaxInfo MaxInfo_avgpaydiff ///
+	LateGame LateGame_avgpaydiff ///    
+	LatePeriod LatePeriod_avgpaydiff if game == "MV", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 
-***** Directional regret data analysis with the regret terms *****
+***** Directional regret data analysis (counterfactual) *****
 * open dataset
 use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir_regret.dta", clear
 
