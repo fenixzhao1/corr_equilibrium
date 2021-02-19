@@ -171,8 +171,9 @@ gen LateGame_avgpaydiff = LateGame * avgpaydiff_std
 gen LatePeriod_avgpaydiff = LatePeriod * avgpaydiff_std
 
 * add indicator dummy for avgpaydiff_std>0 and intersection term
+* positive_regret should be negative_regret
 gen positive_regret = 0
-replace positive_regret = 1 if avgpaydiff_std > 0
+replace positive_regret = 1 if avgpaydiff_std < 0
 gen positive_avgpaydiff = positive_regret * avgpaydiff_std
 
 * logit regressions
@@ -255,8 +256,9 @@ gen LateGame_regretdiff = LateGame * regretdiff_std
 gen LatePeriod_regretdiff = LatePeriod * regretdiff_std
 
 * add indicator dummy for avgpaydiff_std>0 and intersection term
+* positive_regret should be negative_regret
 gen positive_regret = 0
-replace positive_regret = 1 if regretdiff_std > 0
+replace positive_regret = 1 if regretdiff_std < 0
 gen positive_regretdiff = positive_regret * regretdiff_std
 
 * logit regressions
