@@ -162,7 +162,7 @@ sort game_info_group
 
 by game_info_group: egen avgpaydiff_mean= mean(player_avgpaydiff)
 by game_info_group: egen avgpaydiff_sd  = sd(player_avgpaydiff)
-by game_info_group: gen avgpaydiff_std = (player_avgpaydiff-avgpaydiff_mean)/avgpaydiff_sd
+by game_info_group: gen avgpaydiff_std = player_avgpaydiff / 100
 
 * generate intersection terms regarding avgpaydiff
 gen MaxInfo_avgpaydiff = MaxInfo * avgpaydiff_std
@@ -246,7 +246,7 @@ sort game_info_group
 
 by game_info_group: egen regretdiff_mean= mean(player_avgpaydiff)
 by game_info_group: egen regretdiff_sd  = sd(player_avgpaydiff)
-by game_info_group: gen regretdiff_std = (player_avgpaydiff-regretdiff_mean)/regretdiff_sd
+by game_info_group: gen regretdiff_std = player_avgpaydiff / 100
 
 * generate intersection terms regarding avgpaydiff
 gen MaxInfo_regretdiff = MaxInfo * regretdiff_std
