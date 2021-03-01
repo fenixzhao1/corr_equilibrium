@@ -109,6 +109,8 @@ xtable(density_matrix[[4]], digits = 2, caption = uniquetreatment[4])
 xtable(density_matrix[[5]], digits = 2, caption = uniquetreatment[5])
 xtable(density_matrix[[6]], digits = 2, caption = uniquetreatment[6])
 xtable(density_matrix[[7]], digits = 2, caption = uniquetreatment[7])
+xtable(density_matrix[[8]], digits = 2, caption = uniquetreatment[8])
+
 
 de<-as.data.frame(cbind(c(density_matrix[[4]])*total_obs[[4]],c(density_matrix[[5]])*total_obs[[5]]))
 chisq.test(de)

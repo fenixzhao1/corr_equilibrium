@@ -60,7 +60,7 @@ full_data$session_round_pair_id = paste(full_data$session_code, full_data$round_
 full_data$session_round_id = paste(full_data$session_code, full_data$round, sep = "_")
 
 # create treatment variable
-full_data = full_data %>% mutate(information = ifelse(max_info == TRUE, 'H', 'L'))
+full_data = full_data %>% mutate(information = ifelse(max_info == 'TRUE' |  max_info == 'True', 'H', 'L'))
 full_data = full_data %>% mutate(regret_info = ifelse(regret == 2, 'A', 'C'))
 
 full_data$treatment = paste(full_data$game, full_data$information, full_data$regret_info, sep = '_')
