@@ -117,9 +117,9 @@ full_data$session_round_pair_id = paste(full_data$session_code, full_data$round_
 full_data$session_round_id = paste(full_data$session_code, full_data$round, sep = "_")
 
 # create treatment variable
-full_data = full_data %>% mutate(matching = ifelse(mean_matching == TRUE, 'Meanmatch', 'Pairwise'))
-full_data = full_data %>% mutate(time = ifelse(num_subperiods == 0, 'Continuous', 'Discrete'))
-full_data = full_data %>% mutate(information = ifelse(max_info == TRUE, 'MaxInfo', 'MinInfo'))
+#full_data = full_data %>% mutate(matching = ifelse(mean_matching == TRUE, 'Meanmatch', 'Pairwise'))
+#full_data = full_data %>% mutate(time = ifelse(num_subperiods == 0, 'Continuous', 'Discrete'))
+full_data = full_data %>% mutate(information = ifelse(max_info == TRUE | max_info == 'True', 'MaxInfo', 'MinInfo'))
 full_data = full_data %>% mutate(regret_mode = ifelse(regret==2, 'HistAvg', ifelse(regret==3, 'Counterfactual', 'CounterOrigin')))
 full_data$treatment = paste(full_data$game, full_data$information, full_data$regret_mode, sep = '_')
 
