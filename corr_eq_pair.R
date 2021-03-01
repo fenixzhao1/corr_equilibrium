@@ -14,13 +14,20 @@ path5<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_4pk5wq
 path6<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_dpmkufvg.csv" 
 path7<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_gcsgh2se.csv"
 path8<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_ju0cgjd9.csv"
-
 path9<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_wyrupym7.csv"
 path10<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_zepokgc0.csv"
 path11<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_rs7rl6lx.csv"
 
 path12<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_3_dlpeimt2.csv"
 path13<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_3_m1ix0n73.csv"
+path14<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_3_s59xbery.csv"
+path15<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_3_hen9kyv7.csv"
+path16<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BMH_3_3vfdysx7.csv"
+path17<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_3_tlde6vfl.csv"
+path18<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_3_zt8he0n9.csv"
+path19<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_3_glly017c.csv"
+path20<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_3_jb5b2zsg.csv"
+
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"
 
 # load data from the first four sessions and add regret columns
@@ -66,14 +73,26 @@ df_12 <- read.csv(path12, header = T, stringsAsFactors = FALSE)
 df_12 = select(df_12, 1:36)
 df_13 <- read.csv(path13, header = T, stringsAsFactors = FALSE)
 df_13 = select(df_13, 1:36)
+df_14 <- read.csv(path14, header = T, stringsAsFactors = FALSE)
+df_14 = select(df_14, 1:36)
+df_15 <- read.csv(path15, header = T, stringsAsFactors = FALSE)
+df_15 = select(df_15, 1:36)
+df_16 <- read.csv(path16, header = T, stringsAsFactors = FALSE)
+df_16 = select(df_16, 1:36)
+df_17 <- read.csv(path17, header = T, stringsAsFactors = FALSE)
+df_17 = select(df_17, 1:36)
+df_18 <- read.csv(path18, header = T, stringsAsFactors = FALSE)
+df_18 = select(df_18, 1:36)
+df_19 <- read.csv(path19, header = T, stringsAsFactors = FALSE)
+df_19 = select(df_19, 1:36)
+df_20 <- read.csv(path20, header = T, stringsAsFactors = FALSE)
+df_20 = select(df_20, 1:36)
 
-full_data = rbind(full_data, df_5, df_6, df_7, df_8, df_9, df_10, df_11)
-rm(df_5, df_6, df_7, df_8, df_9, df_10, df_11)
-rm(path1, path2, path3, path4, path5, path6, path7, path8, path9, path10, path11)
-
-df_regret = rbind(df_12, df_13)
-rm(df_12, df_13, path12, path13)
-# full_data = df_regret # consider the dataset using the 3rd regret mode
+full_data = rbind(full_data, df_5, df_6, df_7, df_8, df_9, df_10, df_11, df_12, df_13,
+                  df_14, df_15, df_16, df_17, df_18, df_19, df_20)
+rm(df_5, df_6, df_7, df_8, df_9, df_10, df_11, df_12, df_13, df_14, df_15, df_16, df_17, df_18, df_19, df_20)
+rm(path1, path2, path3, path4, path5, path6, path7, path8, path9, path10, path11,
+   path12, path13, path14, path15, path16, path17, path18, path19, path20)
 
 # sort data and add period variable
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
@@ -101,8 +120,8 @@ full_data$session_round_id = paste(full_data$session_code, full_data$round, sep 
 full_data = full_data %>% mutate(matching = ifelse(mean_matching == TRUE, 'Meanmatch', 'Pairwise'))
 full_data = full_data %>% mutate(time = ifelse(num_subperiods == 0, 'Continuous', 'Discrete'))
 full_data = full_data %>% mutate(information = ifelse(max_info == TRUE, 'MaxInfo', 'MinInfo'))
-full_data$treatment = paste(full_data$game, full_data$information, full_data$matching, full_data$time, sep = '_')
-full_data$game_info = paste(full_data$game, full_data$information)
+full_data = full_data %>% mutate(regret_mode = ifelse(regret==2, 'HistAvg', ifelse(regret==3, 'Counterfactual', 'CounterOrigin')))
+full_data$treatment = paste(full_data$game, full_data$information, full_data$regret_mode, sep = '_')
 
 # create strategy indicators
 full_data = full_data %>% mutate(p1_strategy_0 = ifelse(p1_strategy == 0, 1, 0))
@@ -326,11 +345,11 @@ names(df_p2)[names(df_p2)=="p2_switch"]="player_switch"
 df = rbind(df_p1, df_p2)
 
 # standarize avgpay terms
-uniquetreatment = unique(df$game_info)
+uniquetreatment = unique(df$treatment)
 df_list = list()
 for (i in 1:length(uniquetreatment)){
   
-  df_list[[i]] = filter(df, game_info == uniquetreatment[i])
+  df_list[[i]] = filter(df, treatment == uniquetreatment[i])
   mean0 = mean(df$player_avgpay0)
   mean1 = mean(df$player_avgpay1)
   mean2 = mean(df$player_avgpay2)
@@ -477,7 +496,7 @@ rm(df_bm01, df_bm10, df_mv01, df_mv02, df_mv10, df_mv12, df_mv20, df_mv21)
 df_new$cluster_id_dir = paste(df_new$cluster_id, df_new$direction)
 
 # update dta file
-write_dta(df_new, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata_pool_dir_regret.dta")
+write_dta(df_new, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata_pool_dir.dta")
 rm(df, df_new)
 
 
@@ -759,6 +778,8 @@ xtable(density_matrix[[3]], digits = 2, caption = uniquetreatment[3])
 xtable(density_matrix[[4]], digits = 2, caption = uniquetreatment[4])
 xtable(density_matrix[[5]], digits = 2, caption = uniquetreatment[5])
 xtable(density_matrix[[6]], digits = 2, caption = uniquetreatment[6])
+xtable(density_matrix[[7]], digits = 2, caption = uniquetreatment[7])
+xtable(density_matrix[[8]], digits = 2, caption = uniquetreatment[8])
 
 
 ##### Aggregate over time (not used) #####
@@ -1515,13 +1536,17 @@ for (i in 1:length(uniquetreatment)){
 }
 
 # data export
-xtable(transition_matrix[[1]], digits = 2, caption = as.character(uniquetreatment[1]))
-xtable(transition_matrix[[2]], digits = 2, caption = as.character(uniquetreatment[2]))
-xtable(transition_matrix[[3]], digits = 2, caption = as.character(uniquetreatment[3]))
-xtable(transition_matrix[[4]], digits = 2, caption = as.character(uniquetreatment[4]))
+xtable(transition_matrix[[1]], digits = 2, caption = uniquetreatment[1])
+xtable(transition_matrix[[2]], digits = 2, caption = uniquetreatment[2])
+xtable(transition_matrix[[3]], digits = 2, caption = uniquetreatment[3])
+xtable(transition_matrix[[4]], digits = 2, caption = uniquetreatment[4])
+xtable(transition_matrix[[5]], digits = 2, caption = uniquetreatment[5])
+xtable(transition_matrix[[6]], digits = 2, caption = uniquetreatment[6])
+xtable(transition_matrix[[7]], digits = 2, caption = uniquetreatment[7])
+xtable(transition_matrix[[8]], digits = 2, caption = uniquetreatment[8])
 
 
-##### Stay but positive regret & Switch to negative regret #####
+##### Stay but positive regret & Switch to negative regret (not used) #####
 full_data = full_data %>% mutate(p1_current_regret = p1_strategy_0*p1_strategy_0_regret + p1_strategy_1*p1_strategy_1_regret + p1_strategy_2*p1_strategy_2_regret)
 full_data = full_data %>% mutate(p2_current_regret = p2_strategy_0*p2_strategy_0_regret + p2_strategy_1*p2_strategy_1_regret + p2_strategy_2*p2_strategy_2_regret)
 full_data = full_data %>% mutate(

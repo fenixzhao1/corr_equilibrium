@@ -138,6 +138,9 @@ use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_di
 * drop practice round
 drop if round <= 2
 
+* drop regret mode data
+drop if regret == 3
+
 * encode ids
 encode cluster_id, gen (cluster_subject_id)
 encode cluster_id_dir, gen (cluster_subject_direction_id)
@@ -153,15 +156,10 @@ gen MaxInfo_MV = MaxInfo * MV
 gen LateGame = 0
 replace LateGame = 1 if round >= 7
 gen LatePeriod = 0
-replace LatePeriod = 1 if period >= 26
+replace LatePeriod = 1 if period >= 36
 
 * standardize avgpaydiff
-egen game_info_group = group(game_info)
-sort game_info_group
-
-by game_info_group: egen avgpaydiff_mean= mean(player_avgpaydiff)
-by game_info_group: egen avgpaydiff_sd  = sd(player_avgpaydiff)
-by game_info_group: gen avgpaydiff_std = player_avgpaydiff / 100
+gen avgpaydiff_std = player_avgpaydiff / 100
 
 * generate intersection terms regarding avgpaydiff
 gen MaxInfo_avgpaydiff = MaxInfo * avgpaydiff_std
@@ -169,11 +167,10 @@ gen MV_avgpaydiff = MV * avgpaydiff_std
 gen LateGame_avgpaydiff = LateGame * avgpaydiff_std
 gen LatePeriod_avgpaydiff = LatePeriod * avgpaydiff_std
 
-* add indicator dummy for avgpaydiff_std>0 and intersection term
-* positive_regret should be negative_regret
-gen positive_regret = 0
-replace positive_regret = 1 if avgpaydiff_std < 0
-gen positive_avgpaydiff = positive_regret * avgpaydiff_std
+* add indicator dummy for avgpaydiff_std<0 and intersection term
+gen negative_regret = 0
+replace negative_regret = 1 if avgpaydiff_std < 0
+gen negative_avgpaydiff = negative_regret * avgpaydiff_std
 
 * logit regressions
 logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
@@ -197,19 +194,19 @@ logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
-reg player_switch_new avgpaydiff_std positive_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "BM", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
-reg player_switch_new avgpaydiff_std positive_avgpaydiff ///
+reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
 	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
-reg player_switch_new avgpaydiff_std positive_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "MV", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
-reg player_switch_new avgpaydiff_std positive_avgpaydiff ///
+reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
 	LatePeriod LatePeriod_avgpaydiff if game == "MV", cluster(cluster_subject_id)
@@ -276,10 +273,13 @@ outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 ***** Directional regret data analysis (counterfactual) *****
 * open dataset
-use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir_regret.dta", clear
+use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir.dta", clear
 
 * drop practice round
 drop if round <= 2
+
+* drop regret mode data
+drop if regret == 2
 
 * encode ids
 encode cluster_id, gen (cluster_subject_id)
@@ -296,42 +296,58 @@ gen MaxInfo_MV = MaxInfo * MV
 gen LateGame = 0
 replace LateGame = 1 if round >= 7
 gen LatePeriod = 0
-replace LatePeriod = 1 if period >= 26
+replace LatePeriod = 1 if period >= 36
 
 * standardize avgpaydiff
-egen game_info_group = group(game_info)
-sort game_info_group
-
-by game_info_group: egen regretdiff_mean= mean(player_avgpaydiff)
-by game_info_group: egen regretdiff_sd  = sd(player_avgpaydiff)
-by game_info_group: gen regretdiff_std = player_avgpaydiff / 100
+gen avgpaydiff_std = player_avgpaydiff / 100
 
 * generate intersection terms regarding avgpaydiff
-gen MaxInfo_regretdiff = MaxInfo * regretdiff_std
-gen MV_regretdiff = MV * regretdiff_std
-gen LateGame_regretdiff = LateGame * regretdiff_std
-gen LatePeriod_regretdiff = LatePeriod * regretdiff_std
+gen MaxInfo_avgpaydiff = MaxInfo * avgpaydiff_std
+gen MV_avgpaydiff = MV * avgpaydiff_std
+gen LateGame_avgpaydiff = LateGame * avgpaydiff_std
+gen LatePeriod_avgpaydiff = LatePeriod * avgpaydiff_std
 
-* add indicator dummy for avgpaydiff_std>0 and intersection term
-* positive_regret should be negative_regret
-gen positive_regret = 0
-replace positive_regret = 1 if regretdiff_std < 0
-gen positive_regretdiff = positive_regret * regretdiff_std
+* add indicator dummy for avgpaydiff_std<0 and intersection term
+gen negative_regret = 0
+replace negative_regret = 1 if avgpaydiff_std < 0
+gen negative_avgpaydiff = negative_regret * avgpaydiff_std
 
 * logit regressions
-logit player_switch_new regretdiff_std positive_regretdiff, cluster(cluster_subject_id)
+logit player_switch_new avgpaydiff_std, cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
-logit player_switch_new regretdiff_std positive_regretdiff ///
-	  LateGame LateGame_regretdiff ///    
-	  LatePeriod LatePeriod_regretdiff, cluster(cluster_subject_id)
+logit player_switch_new avgpaydiff_std positive_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+
+logit player_switch_new avgpaydiff_std ///
+	  MaxInfo MaxInfo_avgpaydiff ///
+	  MV MV_avgpaydiff MaxInfo_MV ///
+	  LateGame LateGame_avgpaydiff ///    
+	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
+	  MaxInfo MaxInfo_avgpaydiff ///
+	  MV MV_avgpaydiff MaxInfo_MV ///
+	  LateGame LateGame_avgpaydiff ///    
+	  LatePeriod LatePeriod_avgpaydiff, cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
-reg player_switch_new regretdiff_std positive_regretdiff, cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "BM", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
-reg player_switch_new regretdiff_std positive_regretdiff ///
-	LateGame LateGame_regretdiff ///    
-	LatePeriod LatePeriod_regretdiff, cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
+	MaxInfo MaxInfo_avgpaydiff ///
+	LateGame LateGame_avgpaydiff ///    
+	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
+	MaxInfo MaxInfo_avgpaydiff ///
+	LateGame LateGame_avgpaydiff ///    
+	LatePeriod LatePeriod_avgpaydiff if game == "MV", cluster(cluster_subject_id)
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
