@@ -58,25 +58,3 @@ for(tre in label_tre){
 
 
 
-
-
-
-df_bm_l_a<- filter(df_co, treatment == 'BM_L_A')
-ggplot(data=df_bm_l_a ,aes(x=p1_payoff,y=p2_payoff)) + geom_point() + geom_count()  +
-  geom_path(data=puntos_bm,aes(x=V1,y=V2)) +
-  scale_x_continuous(name='Payoff P1', waiver(), limits=c(100,600)) +
-  scale_y_continuous(name='Payoff P2', waiver(), limits=c(100,600)) 
-
-df_bm_h_a<- filter(df_co, treatment == 'BM_H_A')
-
-ggplot(df_bm_h_a ,aes(x=p1_payoff,y=p2_payoff)) + geom_point() + geom_count()  +
-  geom_path(data=puntos_bm,aes(x=V1,y=V2)) +
-  scale_x_continuous(name='Payoff P1', waiver(), limits=c(100,600)) +
-  scale_y_continuous(name='Payoff P2', waiver(), limits=c(100,600)) 
-
-df_bm_h_c<- filter(df_co, treatment == 'BM_H_C')
-ggplot(df_bm_h_c ,aes(x=p1_payoff,y=p2_payoff)) + geom_point() + geom_count()  +
-  geom_path(data=puntos_bm,aes(x=V1,y=V2)) +
-  scale_x_continuous(name='Payoff P1', waiver(), limits=c(100,600)) +
-  scale_y_continuous(name='Payoff P2', waiver(), limits=c(100,600)) 
-
