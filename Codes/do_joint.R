@@ -1,13 +1,13 @@
 ##### Data preparation #####
 # load packages
-rm(list = ls())
+#rm(list = ls())
 library(here)
 library(ggplot2)
 library(dplyr)
 library(xtable)
 library(haven)
 
-load('~/Desktop/jotarepos/correq/corr_equilibrium/Data/data_all.Rda')
+load(here('Data','data_all.Rda'))
 
 ##### Joint density #####
 uniquetreatment = unique(full_data$treatment)
