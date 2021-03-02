@@ -27,6 +27,7 @@ path17<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_3_tld
 path18<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVL_3_zt8he0n9.csv"
 path19<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_3_glly017c.csv"
 path20<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/MVH_3_jb5b2zsg.csv"
+path21<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/BML_3_07gjoche.csv"
 
 figures<-"D:/Dropbox/Working Papers/Correlated Equilibrium/data/figures/"
 
@@ -87,12 +88,15 @@ df_19 <- read.csv(path19, header = T, stringsAsFactors = FALSE)
 df_19 = select(df_19, 1:36)
 df_20 <- read.csv(path20, header = T, stringsAsFactors = FALSE)
 df_20 = select(df_20, 1:36)
+df_21 <- read.csv(path21, header = T, stringsAsFactors = FALSE)
+df_21 = select(df_21, 1:36)
 
 full_data = rbind(full_data, df_5, df_6, df_7, df_8, df_9, df_10, df_11, df_12, df_13,
-                  df_14, df_15, df_16, df_17, df_18, df_19, df_20)
-rm(df_5, df_6, df_7, df_8, df_9, df_10, df_11, df_12, df_13, df_14, df_15, df_16, df_17, df_18, df_19, df_20)
+                  df_14, df_15, df_16, df_17, df_18, df_19, df_20, df_21)
+rm(df_5, df_6, df_7, df_8, df_9, df_10, df_11, df_12, df_13, df_14, df_15, 
+   df_16, df_17, df_18, df_19, df_20, df_21)
 rm(path1, path2, path3, path4, path5, path6, path7, path8, path9, path10, path11,
-   path12, path13, path14, path15, path16, path17, path18, path19, path20)
+   path12, path13, path14, path15, path16, path17, path18, path19, path20, path21)
 
 # sort data and add period variable
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
