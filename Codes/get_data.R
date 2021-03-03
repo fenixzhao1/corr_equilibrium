@@ -1,13 +1,14 @@
 ##### Data preparation #####
 # load packages
-rm(list = ls())
+#rm(list = ls())
 library(here)
 library(ggplot2)
 library(dplyr)
 library(haven)
-your_path<-"~/Desktop/jotarepos/correq/corr_equilibrium/Data/no_bars/"
-your_path_1<-"~/Desktop/jotarepos/correq/corr_equilibrium/Data/new_data/"
+your_path<-here("Data/no_bars/")
+your_path_1<-here("Data/new_data/")
 path = list.files(path=your_path,pattern="*.csv")
+path_1 = list.files(path=your_path_1,pattern="*.csv")
 
 full_data<-NULL
 for(i in seq(along=path)){
@@ -204,6 +205,86 @@ full_data$p2_strategy_1_regret[is.na(full_data$p2_strategy_1_regret)]<-0
 full_data$p2_strategy_2_regret[is.na(full_data$p2_strategy_2_regret)]<-0
 
 # update dta file
-write_dta(full_data,"~/Desktop/jotarepos/correq/corr_equilibrium/Data/stata.dta")
-save(full_data,file="data_all.Rda")
+
+write_dta(full_data,here("Data", "stata.data"))
+save(full_data,here("Data", "data_all.Rda"))
+
+##### Pool p1 and p2 data #####
+#p1 dataset
+df_p1 = full_data
+df_p1 = df_p1 %>% select(-c(p2_code, p2_role, p2_strategy, p2_target,
+                            p2_regret0, p2_regret1, p2_regret2, p2_payoff,
+                            p2_strategy_0, p2_strategy_1, p2_strategy_2, p2_switch,
+                            p2_strategy_0_regret, p2_strategy_1_regret, p2_strategy_2_regret))
+df_p1 = df_p1 %>% select(-c(p3_code, p3_role, p3_strategy, p3_target,
+                            p3_regret0, p3_regret1, p3_regret2, p3_payoff,
+                            p3_strategy_0, p3_strategy_1, p3_strategy_2))
+df_p1 = df_p1 %>% select(-c(p1_regret0, p1_regret1, p1_regret2, p1_target))
+names(df_p1)[names(df_p1)=="p1_code"]="player_code"
+names(df_p1)[names(df_p1)=="p1_role"]="player_role"
+names(df_p1)[names(df_p1)=="p1_strategy"]="player_strategy"
+names(df_p1)[names(df_p1)=="p1_strategy_0"]="player_strategy0"
+names(df_p1)[names(df_p1)=="p1_strategy_1"]="player_strategy1"
+names(df_p1)[names(df_p1)=="p1_strategy_2"]="player_strategy2"
+names(df_p1)[names(df_p1)=="p1_payoff"]="player_payoff"
+names(df_p1)[names(df_p1)=="p1_strategy_0_regret"]="player_avgpay0"
+names(df_p1)[names(df_p1)=="p1_strategy_1_regret"]="player_avgpay1"
+names(df_p1)[names(df_p1)=="p1_strategy_2_regret"]="player_avgpay2"
+names(df_p1)[names(df_p1)=="p1_switch"]="player_switch"
+
+#p2 dataset
+df_p2 = full_data
+df_p2 = df_p2 %>% select(-c(p1_code, p1_role, p1_strategy, p1_target,
+                            p1_regret0, p1_regret1, p1_regret2, p1_payoff,
+                            p1_strategy_0, p1_strategy_1, p1_strategy_2, p1_switch,
+                            p1_strategy_0_regret, p1_strategy_1_regret, p1_strategy_2_regret))
+df_p2 = df_p2 %>% select(-c(p3_code, p3_role, p3_strategy, p3_target,
+                            p3_regret0, p3_regret1, p3_regret2, p3_payoff,
+                            p3_strategy_0, p3_strategy_1, p3_strategy_2))
+df_p2 = df_p2 %>% select(-c(p2_regret0, p2_regret1, p2_regret2, p2_target))
+names(df_p2)[names(df_p2)=="p2_code"]="player_code"
+names(df_p2)[names(df_p2)=="p2_role"]="player_role"
+names(df_p2)[names(df_p2)=="p2_strategy"]="player_strategy"
+names(df_p2)[names(df_p2)=="p2_strategy_0"]="player_strategy0"
+names(df_p2)[names(df_p2)=="p2_strategy_1"]="player_strategy1"
+names(df_p2)[names(df_p2)=="p2_strategy_2"]="player_strategy2"
+names(df_p2)[names(df_p2)=="p2_payoff"]="player_payoff"
+names(df_p2)[names(df_p2)=="p2_strategy_0_regret"]="player_avgpay0"
+names(df_p2)[names(df_p2)=="p2_strategy_1_regret"]="player_avgpay1"
+names(df_p2)[names(df_p2)=="p2_strategy_2_regret"]="player_avgpay2"
+names(df_p2)[names(df_p2)=="p2_switch"]="player_switch"
+
+# combine two datasets
+df = rbind(df_p1, df_p2)
+
+# standarize avgpay terms
+uniquetreatment = unique(df$treatment)
+df_list = list()
+for (i in 1:length(uniquetreatment)){
+  
+  df_list[[i]] = filter(df, treatment == uniquetreatment[i])
+  mean0 = mean(df$player_avgpay0)
+  mean1 = mean(df$player_avgpay1)
+  mean2 = mean(df$player_avgpay2)
+  sd0 = sd(df$player_avgpay0)
+  sd1 = sd(df$player_avgpay1)
+  sd2 = sd(df$player_avgpay2)
+  df_list[[i]] = df_list[[i]] %>% mutate(player_avgpay0_standard = (player_avgpay0-mean0)/sd0)
+  df_list[[i]] = df_list[[i]] %>% mutate(player_avgpay1_standard = (player_avgpay1-mean1)/sd1)
+  df_list[[i]] = df_list[[i]] %>% mutate(player_avgpay2_standard = (player_avgpay2-mean2)/sd2)
+}
+
+df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]])
+
+# add new group id
+df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
+
+# update dta file
+
+write_dta(df_new,here("Data", "stata_pool.dta"))
+rm(df_list, df_new, df_p1, df_p2, df)
+
+
+
+
 
