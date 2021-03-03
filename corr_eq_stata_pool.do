@@ -195,21 +195,25 @@ outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
 reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
 	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
 	LatePeriod LatePeriod_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 
@@ -335,19 +339,23 @@ outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
 reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
 	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
 	LatePeriod LatePeriod_avgpaydiff if game == "MV", cluster(cluster_subject_id)
+test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)

@@ -123,8 +123,9 @@ full_data$session_round_id = paste(full_data$session_code, full_data$round, sep 
 # create treatment variable
 #full_data = full_data %>% mutate(matching = ifelse(mean_matching == TRUE, 'Meanmatch', 'Pairwise'))
 #full_data = full_data %>% mutate(time = ifelse(num_subperiods == 0, 'Continuous', 'Discrete'))
-full_data = full_data %>% mutate(information = ifelse(max_info == TRUE | max_info == 'True', 'MaxInfo', 'MinInfo'))
-full_data = full_data %>% mutate(regret_mode = ifelse(regret==2, 'HistAvg', ifelse(regret==3, 'Counterfactual', 'CounterOrigin')))
+full_data = full_data %>% mutate(game = ifelse(game == 'BM', 'CH', 'MV'))
+full_data = full_data %>% mutate(information = ifelse(max_info == TRUE | max_info == 'True', 'H', 'L'))
+full_data = full_data %>% mutate(regret_mode = ifelse(regret==2, 'A', ifelse(regret==3, 'C', 'Origin')))
 full_data$treatment = paste(full_data$game, full_data$information, full_data$regret_mode, sep = '_')
 
 # create strategy indicators
@@ -146,7 +147,7 @@ full_data$type = NA
 
 for (i in 1:length(full_data$tick)){
   # update BM types
-  if (full_data$game[i] == 'BM'){
+  if (full_data$game[i] == 'CH'){
     if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 1){full_data$type[i] = 'collude'}
     else if (full_data$p1_strategy[i] != full_data$p2_strategy[i]){full_data$type[i] = 'Nash'}
     else{full_data$type[i] = 'UL'}
@@ -185,7 +186,7 @@ full_data$type2 = NA
 
 for (i in 1:length(full_data$tick)){
   # update BM types
-  if (full_data$game[i] == 'BM'){
+  if (full_data$game[i] == 'CH'){
     if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 4}
     else if (full_data$p1_strategy[i] == 1 & full_data$p2_strategy[i] == 0){full_data$type2[i] = 3}
     else if (full_data$p1_strategy[i] == 0 & full_data$p2_strategy[i] == 1){full_data$type2[i] = 2}
@@ -226,7 +227,7 @@ pay_FT3[[1]]<-matrix(c(300,100,0,0),2,2)
 pay_FT3[[2]]<-matrix(c(200,0,0,200),2,2)
 pay_FT3[[3]]<-matrix(c(0,0,0,300),2,2)
 
-for(row in seq(full_data$tick[full_data$game=="BM"])){
+for(row in seq(full_data$tick[full_data$game=="CH"])){
   full_data$p1_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p1_strategy[full_data$game=="BM"][row]+1,full_data$p2_strategy[full_data$game=="BM"][row]+1]
   full_data$p2_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p2_strategy[full_data$game=="BM"][row]+1,full_data$p1_strategy[full_data$game=="BM"][row]+1]
 }
@@ -430,7 +431,7 @@ df$cluster_id = paste(df$session_round_id, df$player_code)
 # further separate the dataset to construct switch vs avgpaydiff
 # BM 0 to 1
 df_bm01 = df %>% group_by(cluster_id) %>% filter(
-  game == 'BM' & lag(player_strategy == 0))
+  game == 'CH' & lag(player_strategy == 0))
 df_bm01 = df_bm01 %>% group_by(cluster_id) %>% mutate(
   player_switch_new = ifelse(player_strategy==1, 1, 0),
   player_avgpaydiff = player_avgpay1 - player_avgpay0,
@@ -438,7 +439,7 @@ df_bm01 = df_bm01 %>% group_by(cluster_id) %>% mutate(
 
 # BM 1 to 0
 df_bm10 = df %>% group_by(cluster_id) %>% filter(
-  game == 'BM' & lag(player_strategy == 1))
+  game == 'CH' & lag(player_strategy == 1))
 df_bm10 = df_bm10 %>% group_by(cluster_id) %>% mutate(
   player_switch_new = ifelse(player_strategy==0, 1, 0),
   player_avgpaydiff = player_avgpay0 - player_avgpay1,
@@ -909,7 +910,7 @@ for (i in 1:length(uniquetreatment)){
   png(file, width = 1000, height = 500)
   
   # BM plot
-  if (df_treatment$game[1] == 'BM'){
+  if (df_treatment$game[1] == 'CH'){
     pic = ggplot(data = aggregate_plot[[i]]) +
       geom_line(aes(x=period, y=type_collude, colour='blue')) +
       geom_line(aes(x=period, y=type_Nash, colour='red')) +
@@ -988,7 +989,7 @@ for (i in 1:length(uniquetreatment)){
   png(file, width = 1000, height = 500)
   
   # BM plot
-  if (df_treatment$game[1] == 'BM'){
+  if (df_treatment$game[1] == 'CH'){
     pic = ggplot(data = aggregate_plot[[i]]) +
       geom_line(aes(x=round, y=type_collude, colour='blue')) +
       geom_line(aes(x=round, y=type_Nash, colour='red')) +
@@ -1055,7 +1056,7 @@ for (i in 1:length(uniquepair)){
   table$info[3*i] = df_pair$information[1]
   
   # update type and frequency info for BM
-  if (df_pair$game[1] == 'BM'){
+  if (df_pair$game[1] == 'CH'){
     table$type[3*i-2] = 'collude'
     table$freq[3*i-2] = sum(df_pair$type_collude)
     table$type[3*i-1] = 'Nash'
@@ -1080,7 +1081,7 @@ for (i in 1:length(uniquetreatment)){
   table_game = filter(table, treatment == uniquetreatment[i])
   
   # type pair for BM barplot
-  if (table_game$game[1] == 'BM'){
+  if (table_game$game[1] == 'CH'){
     
     table_game$te<-0
     table_game$te[table_game$type=="collude"]<-1
@@ -1429,7 +1430,7 @@ for (i in 1:length(uniquetreatment)){
   pairs = unique(df$session_round_pair_id)
   
   # transitions for BM
-  if (df$game[1] == 'BM'){
+  if (df$game[1] == 'CH'){
     
     # generate the empty matrix
     transition = matrix(0, nrow = 4, ncol = 5)
