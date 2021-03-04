@@ -1,5 +1,3 @@
-
-
 ##### Data preparation #####
 # load packages
 rm(list = ls())
