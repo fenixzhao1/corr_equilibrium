@@ -284,7 +284,132 @@ df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
 write_dta(df_new,here("Data", "stata_pool.dta"))
 rm(df_list, df_new, df_p1, df_p2, df)
 
+##### Pool p1 and p2 data and reconstrcut the dataset to study switch and avgpaydiff #####
+#p1 dataset
+df_p1 = full_data
+df_p1 = df_p1 %>% select(-c(p2_code, p2_role, p2_strategy, p2_target,
+                            p2_regret0, p2_regret1, p2_regret2, p2_payoff,
+                            p2_strategy_0, p2_strategy_1, p2_strategy_2, p2_switch,
+                            p2_strategy_0_regret, p2_strategy_1_regret, p2_strategy_2_regret))
+df_p1 = df_p1 %>% select(-c(p3_code, p3_role, p3_strategy, p3_target,
+                            p3_regret0, p3_regret1, p3_regret2, p3_payoff,
+                            p3_strategy_0, p3_strategy_1, p3_strategy_2))
+df_p1 = df_p1 %>% select(-c(p1_regret0, p1_regret1, p1_regret2, p1_target))
+names(df_p1)[names(df_p1)=="p1_code"]="player_code"
+names(df_p1)[names(df_p1)=="p1_role"]="player_role"
+names(df_p1)[names(df_p1)=="p1_strategy"]="player_strategy"
+names(df_p1)[names(df_p1)=="p1_strategy_0"]="player_strategy0"
+names(df_p1)[names(df_p1)=="p1_strategy_1"]="player_strategy1"
+names(df_p1)[names(df_p1)=="p1_strategy_2"]="player_strategy2"
+names(df_p1)[names(df_p1)=="p1_payoff"]="player_payoff"
+names(df_p1)[names(df_p1)=="p1_strategy_0_regret"]="player_avgpay0"
+names(df_p1)[names(df_p1)=="p1_strategy_1_regret"]="player_avgpay1"
+names(df_p1)[names(df_p1)=="p1_strategy_2_regret"]="player_avgpay2"
+names(df_p1)[names(df_p1)=="p1_switch"]="player_switch"
 
+#p2 dataset
+df_p2 = full_data
+df_p2 = df_p2 %>% select(-c(p1_code, p1_role, p1_strategy, p1_target,
+                            p1_regret0, p1_regret1, p1_regret2, p1_payoff,
+                            p1_strategy_0, p1_strategy_1, p1_strategy_2, p1_switch,
+                            p1_strategy_0_regret, p1_strategy_1_regret, p1_strategy_2_regret))
+df_p2 = df_p2 %>% select(-c(p3_code, p3_role, p3_strategy, p3_target,
+                            p3_regret0, p3_regret1, p3_regret2, p3_payoff,
+                            p3_strategy_0, p3_strategy_1, p3_strategy_2))
+df_p2 = df_p2 %>% select(-c(p2_regret0, p2_regret1, p2_regret2, p2_target))
+names(df_p2)[names(df_p2)=="p2_code"]="player_code"
+names(df_p2)[names(df_p2)=="p2_role"]="player_role"
+names(df_p2)[names(df_p2)=="p2_strategy"]="player_strategy"
+names(df_p2)[names(df_p2)=="p2_strategy_0"]="player_strategy0"
+names(df_p2)[names(df_p2)=="p2_strategy_1"]="player_strategy1"
+names(df_p2)[names(df_p2)=="p2_strategy_2"]="player_strategy2"
+names(df_p2)[names(df_p2)=="p2_payoff"]="player_payoff"
+names(df_p2)[names(df_p2)=="p2_strategy_0_regret"]="player_avgpay0"
+names(df_p2)[names(df_p2)=="p2_strategy_1_regret"]="player_avgpay1"
+names(df_p2)[names(df_p2)=="p2_strategy_2_regret"]="player_avgpay2"
+names(df_p2)[names(df_p2)=="p2_switch"]="player_switch"
+
+# combine two datasets
+df = rbind(df_p1, df_p2)
+rm(df_p1, df_p2)
+
+# add new group id
+df$cluster_id = paste(df$session_round_id, df$player_code)
+
+# further separate the dataset to construct switch vs avgpaydiff
+# BM 0 to 1
+df_bm01 = df %>% group_by(cluster_id) %>% filter(
+  game == 'BM' & lag(player_strategy == 0))
+df_bm01 = df_bm01 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==1, 1, 0),
+  player_avgpaydiff = player_avgpay1 - player_avgpay0,
+  direction = 'bm01')
+
+# BM 1 to 0
+df_bm10 = df %>% group_by(cluster_id) %>% filter(
+  game == 'BM' & lag(player_strategy == 1))
+df_bm10 = df_bm10 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==0, 1, 0),
+  player_avgpaydiff = player_avgpay0 - player_avgpay1,
+  direction = 'bm10')
+
+# MV 0 to 1
+df_mv01 = df %>% group_by(cluster_id) %>% filter(
+  game == 'MV' & lag(player_strategy == 0))
+df_mv01 = df_mv01 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==1, 1, 0),
+  player_avgpaydiff = player_avgpay1 - player_avgpay0,
+  direction = 'mv01')
+
+# MV 0 to 2
+df_mv02 = df %>% group_by(cluster_id) %>% filter(
+  game == 'MV' & lag(player_strategy == 0))
+df_mv02 = df_mv02 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==2, 1, 0),
+  player_avgpaydiff = player_avgpay2 - player_avgpay0,
+  direction = 'mv02')
+
+# MV 1 to 0
+df_mv10 = df %>% group_by(cluster_id) %>% filter(
+  game == 'MV' & lag(player_strategy == 1))
+df_mv10 = df_mv10 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==0, 1, 0),
+  player_avgpaydiff = player_avgpay0 - player_avgpay1,
+  direction = 'mv10')
+
+# MV 1 to 2
+df_mv12 = df %>% group_by(cluster_id) %>% filter(
+  game == 'MV' & lag(player_strategy == 1))
+df_mv12 = df_mv12 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==2, 1, 0),
+  player_avgpaydiff = player_avgpay2 - player_avgpay1,
+  direction = 'mv12')
+
+# MV 2 to 0
+df_mv20 = df %>% group_by(cluster_id) %>% filter(
+  game == 'MV' & lag(player_strategy == 2))
+df_mv20 = df_mv20 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==0, 1, 0),
+  player_avgpaydiff = player_avgpay0 - player_avgpay2,
+  direction = 'mv20')
+
+# MV 2 to 1
+df_mv21 = df %>% group_by(cluster_id) %>% filter(
+  game == 'MV' & lag(player_strategy == 2))
+df_mv21 = df_mv21 %>% group_by(cluster_id) %>% mutate(
+  player_switch_new = ifelse(player_strategy==1, 1, 0),
+  player_avgpaydiff = player_avgpay1 - player_avgpay2,
+  direction = 'mv21')
+
+# combine all dataset
+df_new = rbind(df_bm01, df_bm10, df_mv01, df_mv02, df_mv10, df_mv12, df_mv20, df_mv21)
+rm(df_bm01, df_bm10, df_mv01, df_mv02, df_mv10, df_mv12, df_mv20, df_mv21)
+
+# construct a new cluster variable
+df_new$cluster_id_dir = paste(df_new$cluster_id, df_new$direction)
+
+# update dta file
+write_dta(df_new,here("Data", "stata_pool_dir.dta"))
 
 
 
