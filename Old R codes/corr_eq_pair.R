@@ -640,14 +640,14 @@ for (i in 1:length(uniquepairs)){
   if (length(pairdata$tick) <= 20){next}
   
   # calculate profile index and draw graph for BM
-  if (pairdata$game[1] == 'BM'){
+  if (pairdata$game[1] == 'CH'){
     
     collude = round(mean(pairdata_second$type_collude), digits = 2)
     nash = round(mean(pairdata_second$type_Nash), digits = 2)
     
-    title1 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+    title1 = paste(as.character(pairdata$treatment[1]),
                    as.character(pairdata$session_round_pair_id[1]), sep = '_')
-    title2 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+    title2 = paste(as.character(pairdata$treatment[1]),
                    'Collude', as.character(collude), 'Nash', as.character(nash), sep = ' ')
     file = paste(figures, title1, sep = "")
     file = paste(file, ".png", sep = "")
@@ -666,9 +666,9 @@ for (i in 1:length(uniquepairs)){
     p1adv = round(mean(pairdata_second$type_p1adv), digits = 2)
     p2adv = round(mean(pairdata_second$type_p2adv), digits = 2)
     
-    title1 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+    title1 = paste(as.character(pairdata$treatment[1]),
                    as.character(pairdata$session_round_pair_id[1]), sep = '_')
-    title2 = paste(as.character(pairdata$game[1]), as.character(pairdata$information[1]),
+    title2 = paste(as.character(pairdata$treatment[1]),
                    'p1 adv', as.character(p1adv), 'p2 adv', as.character(p2adv), sep = ' ')
     file = paste(figures, title1, sep = "")
     file = paste(file, ".png", sep = "")
