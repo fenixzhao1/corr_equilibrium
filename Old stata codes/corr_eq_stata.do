@@ -158,7 +158,7 @@ encode cluster_id_dir, gen (cluster_subject_direction_id)
 
 * generate treatment dummies
 gen MaxInfo = 0
-replace MaxInfo = 1 if information == "MaxInfo"
+replace MaxInfo = 1 if information == "H"
 gen MV = 0
 replace MV = 1 if game == "MV"
 gen MaxInfo_MV = MaxInfo * MV
@@ -205,14 +205,14 @@ logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
-reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "CH", cluster(cluster_subject_id)
 test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
-	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
+	LatePeriod LatePeriod_avgpaydiff if game == "CH", cluster(cluster_subject_id)
 test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
@@ -226,3 +226,67 @@ reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	LatePeriod LatePeriod_avgpaydiff if game == "MV", cluster(cluster_subject_id)
 test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
+
+
+
+***** Beta estimation testing using CH data and counterfactual *****
+* open dataset
+use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_dir.dta", clear
+
+* drop practice round
+drop if round <= 2
+
+* keep counterfactual and CH data
+keep if regret == 3 & game == "CH"
+
+* encode ids
+encode cluster_id, gen (cluster_subject_id)
+encode cluster_id_dir, gen (cluster_subject_direction_id)
+encode player_code, gen (subject_id)
+
+* generate treatment dummies
+gen H = 0
+replace H = 1 if information == "H"
+
+* add indicator dummy for regret<0 and intersection term
+rename player_avgpaydiff player_regret
+gen negative_regret_dummy_ = 0
+replace negative_regret_dummy = 1 if player_regret < 0
+gen negative_regret = negative_regret_dummy * player_regret
+
+* generate intersection terms regarding avgpaydiff
+gen H_regret = H * player_regret
+gen H_negative_regret = H * negative_regret
+
+* logit regressions
+xi:logit player_switch_new player_regret negative_regret ///
+      H_regret H_negative_regret ///
+      i.subject_id, cluster(cluster_subject_id)
+outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
+
+logit player_switch_new player_regret negative_regret ///
+      H_regret H_negative_regret, cluster(cluster_subject_id)
+
+xi:logit player_switch_new player_regret ///
+         H_regret ///
+         i.subject_id, cluster(cluster_subject_id)
+	  
+logit player_switch_new player_regret ///
+      H_regret, cluster(cluster_subject_id)
+
+* keep low information
+keep if H == 0
+xi:logit player_switch_new player_regret i.subject_id, cluster(cluster_subject_id) noconstant 
+logit player_switch_new player_regret, cluster(cluster_subject_id) noconstant 
+
+
+
+
+
+
+
+
+
+
+
+

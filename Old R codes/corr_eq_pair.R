@@ -228,8 +228,8 @@ pay_FT3[[2]]<-matrix(c(200,0,0,200),2,2)
 pay_FT3[[3]]<-matrix(c(0,0,0,300),2,2)
 
 for(row in seq(full_data$tick[full_data$game=="CH"])){
-  full_data$p1_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p1_strategy[full_data$game=="BM"][row]+1,full_data$p2_strategy[full_data$game=="BM"][row]+1]
-  full_data$p2_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p2_strategy[full_data$game=="BM"][row]+1,full_data$p1_strategy[full_data$game=="BM"][row]+1]
+  full_data$p1_payoff[full_data$game=="CH"][row]<- pay_chicken[full_data$p1_strategy[full_data$game=="CH"][row]+1,full_data$p2_strategy[full_data$game=="CH"][row]+1]
+  full_data$p2_payoff[full_data$game=="CH"][row]<- pay_chicken[full_data$p2_strategy[full_data$game=="CH"][row]+1,full_data$p1_strategy[full_data$game=="CH"][row]+1]
 }
 
 for(row in seq(full_data$tick[full_data$game=="MV"])){
@@ -277,14 +277,14 @@ full_data$p2_strategy_2_regret[is.na(full_data$p2_strategy_2_regret)]<-0
 write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/produce/stata.dta")
 
 # # check the calculated regret and recorded regret
-# regret_data = filter(full_data, session_code == '4pk5wq8n' | session_code == 'dpmkufvg')
+# regret_data = filter(full_data, regret == 3)
 # regret_data = regret_data %>% mutate(
-#   p1_0diff = p1_strategy_0_regret - p1_regret0,
-#   p1_1diff = p1_strategy_1_regret - p1_regret1,
-#   p1_2diff = p1_strategy_2_regret - p1_regret2,
-#   p2_0diff = p2_strategy_0_regret - p2_regret0,
-#   p2_1diff = p2_strategy_1_regret - p2_regret1,
-#   p2_2diff = p2_strategy_2_regret - p2_regret2
+#   p1_0diff = p1_strategy_0_regret - as.numeric(p1_regret0),
+#   p1_1diff = p1_strategy_1_regret - as.numeric(p1_regret1),
+#   p1_2diff = p1_strategy_2_regret - as.numeric(p1_regret2),
+#   p2_0diff = p2_strategy_0_regret - as.numeric(p2_regret0),
+#   p2_1diff = p2_strategy_1_regret - as.numeric(p2_regret1),
+#   p2_2diff = p2_strategy_2_regret - as.numeric(p2_regret2)
 # )
 # summary(regret_data$p1_0diff)
 # summary(regret_data$p1_1diff)
@@ -292,13 +292,6 @@ write_dta(full_data, "D:/Dropbox/Working Papers/Correlated Equilibrium/data/prod
 # summary(regret_data$p2_0diff)
 # summary(regret_data$p2_1diff)
 # summary(regret_data$p2_2diff)
-# 
-# uniquepair = unique(regret_data$session_round_pair_id)
-# df_round = filter(regret_data, session_round_pair_id == uniquepair[1])
-# df_round = select(df_round, c(session_round_pair_id, period,
-#                               p1_strategy, p2_strategy, p1_regret0, p1_regret1, p1_regret2,
-#                               p1_strategy_0_regret, p1_strategy_1_regret, p1_strategy_2_regret))
-# write.csv(df_round, "D:/Dropbox/sample.csv")
 
 
 ##### Pool p1 and p2 data #####

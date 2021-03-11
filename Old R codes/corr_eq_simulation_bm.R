@@ -345,8 +345,8 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
 mu = 1500 # HM2000 probability parameter
 n = 1000 # number of periods in each simulation
 sim = 100 # number of simulations
-experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = 0.05
+experiment = 1 # number of experimentation periods where players randomly make decisions
+beta = 0.0093
 
 # set up the joint density matrix
 joint_density_all = matrix(c(0,0,0,0),2,2)
@@ -392,26 +392,26 @@ for (s in 1:sim){
     period = 1:n
   )
   
-  # graph the decision making
-  title = paste('logit_hm2000r', 'BM', 'sim', as.character(s), sep = '_')
-  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
-  file = paste(file, ".png", sep = "")
-  png(file, width = 400, height = 200)
-
-  pic = ggplot(data = df) +
-    geom_line(aes(x=period, y=p1_choice, colour='blue')) +
-    geom_line(aes(x=period, y=p2_choice, colour='red')) +
-    scale_x_discrete(name='period', waiver()) +
-    scale_y_continuous(name='decision', limits=c(1,2)) +
-    ggtitle(title) +
-    theme_bw() +
-    scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
-    theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
-          axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
-          axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
-
-  print(pic)
-  dev.off()
+  # # graph the decision making
+  # title = paste('logit_hm2000r', 'BM', 'sim', as.character(s), sep = '_')
+  # file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
+  # file = paste(file, ".png", sep = "")
+  # png(file, width = 400, height = 200)
+  # 
+  # pic = ggplot(data = df) +
+  #   geom_line(aes(x=period, y=p1_choice, colour='blue')) +
+  #   geom_line(aes(x=period, y=p2_choice, colour='red')) +
+  #   scale_x_discrete(name='period', waiver()) +
+  #   scale_y_continuous(name='decision', limits=c(1,2)) +
+  #   ggtitle(title) +
+  #   theme_bw() +
+  #   scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
+  #   theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+  #         axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+  #         axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  # 
+  # print(pic)
+  # dev.off()
 }
 
 # finalize the joint density matrix
@@ -421,7 +421,7 @@ for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
 }
 joint_density_all = joint_density_all / sim
-xtable(joint_density_all, caption = title)
+xtable(joint_density_all)
 
 
 ##### Pair level graph and joint density - HM2001 #####
