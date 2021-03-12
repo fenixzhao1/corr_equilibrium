@@ -205,14 +205,14 @@ logit player_switch_new avgpaydiff_std positive_avgpaydiff ///
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
 * OLS regression
-reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "CH", cluster(cluster_subject_id)
+reg player_switch_new avgpaydiff_std negative_avgpaydiff if game == "BM", cluster(cluster_subject_id)
 test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(3)
 
 reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff ///
 	LateGame LateGame_avgpaydiff ///    
-	LatePeriod LatePeriod_avgpaydiff if game == "CH", cluster(cluster_subject_id)
+	LatePeriod LatePeriod_avgpaydiff if game == "BM", cluster(cluster_subject_id)
 test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(3)
 
@@ -237,7 +237,7 @@ use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\produce\stata_pool_di
 drop if round <= 2
 
 * keep counterfactual and CH data
-keep if regret == 3 & game == "CH"
+keep if regret == 3 & game == "BM"
 
 * encode ids
 encode cluster_id, gen (cluster_subject_id)

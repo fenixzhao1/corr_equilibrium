@@ -1,18 +1,21 @@
 ##### Data preparation #####
 # load packages
-#rm(list = ls())
+rm(list = ls())
 library(here)
 library(ggplot2)
 library(dplyr)
 library(haven)
+
+# add paths to files
 your_path<-here("Data/no_bars/")
 your_path_1<-here("Data/new_data/")
-path = list.files(path=your_path,pattern="*.csv")
-path_1 = list.files(path=your_path_1,pattern="*.csv")
+path = list.files(path=your_path, pattern="*.csv")
+path_1 = list.files(path=your_path_1, pattern="*.csv")
 
+# import data with no regret columns
 full_data<-NULL
 for(i in seq(along=path)){
-  d<-read.csv(paste(your_path,path[i],sep=""),header=T, stringsAsFactors = FALSE)
+  d<-read.csv(paste(your_path, '/', path[i],sep=""),header=T, stringsAsFactors = FALSE)
   d = select(d, 1:27)
   full_data<-rbind(full_data,d)
 }
@@ -26,14 +29,15 @@ full_data = full_data %>% mutate(
   p2_regret2 = 0,
   p3_regret0 = 0,
   p3_regret1 = 0,
-  p3_regret2 = 0
+  p3_regret2 = 0,
+  adjust_regret = TRUE
 )
 
-path_1 = list.files(path=your_path_1,pattern="*.csv")
-
+# import the rest of the data with regret columns
 for(i in seq(along=path_1)){
-  d<-read.csv(paste(your_path_1,path_1[i],sep=""),header=T, stringsAsFactors = FALSE)
+  d<-read.csv(paste(your_path_1, '/', path_1[i],sep=""),header=T, stringsAsFactors = FALSE)
   d = select(d, 1:36)
+  d = d %>% mutate(adjust_regret = FALSE)
   full_data<-rbind(full_data,d)
 }
 rm(d)
@@ -63,7 +67,6 @@ full_data$session_round_id = paste(full_data$session_code, full_data$round, sep 
 # create treatment variable
 full_data = full_data %>% mutate(information = ifelse(max_info == 'TRUE' |  max_info == 'True', 'H', 'L'))
 full_data = full_data %>% mutate(regret_info = ifelse(regret == 2, 'A', 'C'))
-
 full_data$treatment = paste(full_data$game, full_data$information, full_data$regret_info, sep = '_')
 full_data$game_info = paste(full_data$game, full_data$information)
 
@@ -77,9 +80,6 @@ full_data = full_data %>% mutate(p2_strategy_2 = ifelse(p2_strategy == 2, 1, 0))
 full_data = full_data %>% mutate(p3_strategy_0 = ifelse(p3_strategy == 0, 1, 0))
 full_data = full_data %>% mutate(p3_strategy_1 = ifelse(p3_strategy == 1, 1, 0))
 full_data = full_data %>% mutate(p3_strategy_2 = ifelse(p3_strategy == 2, 1, 0))
-
-# check number of subjects
-uniquePlayer = union(unique(full_data$p1_code), unique(full_data$p2_code))
 
 # create and update type variables
 full_data$type = NA
@@ -153,41 +153,35 @@ full_data$p3_payoff<-0
 # create payoff matrices
 pay_chicken<-matrix(c(100,200,600,500),2,2)
 pay_MV<-matrix(c(0,200,100,100,0,200,200,100,0),3,3)
-pay_FT1<-list()
-pay_FT1[[1]]<-matrix(c(0,100,0,100),2,2)
-pay_FT1[[2]]<-matrix(c(200,200,0,200),2,2)
-pay_FT1[[3]]<-matrix(c(0,100,0,100),2,2)
-pay_FT2<-list()
-pay_FT2[[1]]<-matrix(c(100,100,0,0),2,2)
-pay_FT2[[2]]<-matrix(c(200,200,0,200),2,2)
-pay_FT2[[3]]<-matrix(c(100,100,0,0),2,2)
-pay_FT3<-list()
-pay_FT3[[1]]<-matrix(c(300,100,0,0),2,2)
-pay_FT3[[2]]<-matrix(c(200,0,0,200),2,2)
-pay_FT3[[3]]<-matrix(c(0,0,0,300),2,2)
+# pay_FT1<-list()
+# pay_FT1[[1]]<-matrix(c(0,100,0,100),2,2)
+# pay_FT1[[2]]<-matrix(c(200,200,0,200),2,2)
+# pay_FT1[[3]]<-matrix(c(0,100,0,100),2,2)
+# pay_FT2<-list()
+# pay_FT2[[1]]<-matrix(c(100,100,0,0),2,2)
+# pay_FT2[[2]]<-matrix(c(200,200,0,200),2,2)
+# pay_FT2[[3]]<-matrix(c(100,100,0,0),2,2)
+# pay_FT3<-list()
+# pay_FT3[[1]]<-matrix(c(300,100,0,0),2,2)
+# pay_FT3[[2]]<-matrix(c(200,0,0,200),2,2)
+# pay_FT3[[3]]<-matrix(c(0,0,0,300),2,2)
 
 for(row in seq(full_data$tick[full_data$game=="BM"])){
   full_data$p1_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p1_strategy[full_data$game=="BM"][row]+1,full_data$p2_strategy[full_data$game=="BM"][row]+1]
   full_data$p2_payoff[full_data$game=="BM"][row]<- pay_chicken[full_data$p2_strategy[full_data$game=="BM"][row]+1,full_data$p1_strategy[full_data$game=="BM"][row]+1]
 }
-
 for(row in seq(full_data$tick[full_data$game=="MV"])){
   full_data$p1_payoff[full_data$game=="MV"][row]<- pay_MV[full_data$p1_strategy[full_data$game=="MV"][row]+1,full_data$p2_strategy[full_data$game=="MV"][row]+1]
   full_data$p2_payoff[full_data$game=="MV"][row]<- pay_MV[full_data$p2_strategy[full_data$game=="MV"][row]+1,full_data$p1_strategy[full_data$game=="MV"][row]+1]
 }
+# for(row in seq(full_data$tick[full_data$game=="FP"])){
+#   full_data$p1_payoff[full_data$game=="FP"][row]<- pay_FT1[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
+#   full_data$p2_payoff[full_data$game=="FP"][row]<- pay_FT2[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
+#   full_data$p3_payoff[full_data$game=="FP"][row]<- pay_FT3[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
+# }
 
-for(row in seq(full_data$tick[full_data$game=="FP"])){
-  full_data$p1_payoff[full_data$game=="FP"][row]<- pay_FT1[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
-  full_data$p2_payoff[full_data$game=="FP"][row]<- pay_FT2[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
-  full_data$p3_payoff[full_data$game=="FP"][row]<- pay_FT3[[full_data$p3_strategy[full_data$game=="FP"][row]+1]][full_data$p1_strategy[full_data$game=="FP"][row]+1,full_data$p2_strategy[full_data$game=="FP"][row]+1]
-}
-
-rm(pay_chicken, pay_FT1, pay_FT2, pay_FT3, pay_MV)
-
-# create regret
-full_data = 
-  full_data %>%
-  group_by(session_round_pair_id) %>%
+# manually calculate regret
+full_data = full_data %>% group_by(session_round_pair_id) %>%
   mutate(p1_strategy_0_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_0), 0))/cumsum(coalesce(lag(p1_strategy_0),0)),
          p1_strategy_1_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_1), 0))/cumsum(coalesce(lag(p1_strategy_1),0)),
          p1_strategy_2_regret= cumsum(coalesce(lag(p1_payoff), 0)*coalesce(lag(p1_strategy_2), 0))/cumsum(coalesce(lag(p1_strategy_2),0)),
@@ -204,10 +198,23 @@ full_data$p2_strategy_0_regret[is.na(full_data$p2_strategy_0_regret)]<-0
 full_data$p2_strategy_1_regret[is.na(full_data$p2_strategy_1_regret)]<-0
 full_data$p2_strategy_2_regret[is.na(full_data$p2_strategy_2_regret)]<-0
 
-# update dta file
+# remove observations when regret is not correctly recorded
+full_data = filter(full_data, p1_regret0 != 'error' & p2_regret0 != 'error')
 
-write_dta(full_data,here("Data", "stata.data"))
-save(full_data,here("Data", "data_all.Rda"))
+# update regret for those sessions with no regret columns
+full_data = full_data %>% mutate(
+  p1_strategy_0_regret = ifelse(adjust_regret==TRUE, p1_strategy_0_regret, as.numeric(p1_regret0)),
+  p1_strategy_1_regret = ifelse(adjust_regret==TRUE, p1_strategy_1_regret, as.numeric(p1_regret1)),
+  p1_strategy_2_regret = ifelse(adjust_regret==TRUE, p1_strategy_2_regret, as.numeric(p1_regret2)),
+  p2_strategy_0_regret = ifelse(adjust_regret==TRUE, p2_strategy_0_regret, as.numeric(p2_regret0)),
+  p2_strategy_1_regret = ifelse(adjust_regret==TRUE, p2_strategy_1_regret, as.numeric(p2_regret1)),
+  p2_strategy_2_regret = ifelse(adjust_regret==TRUE, p2_strategy_2_regret, as.numeric(p2_regret2)),
+)
+
+# update dta file
+write_dta(full_data,here("Data", "stata.dta"))
+write.csv(full_data,here("Data", "data_all.csv"))
+
 
 ##### Pool p1 and p2 data #####
 #p1 dataset
@@ -280,7 +287,6 @@ df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]])
 df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
 
 # update dta file
-
 write_dta(df_new,here("Data", "stata_pool.dta"))
 rm(df_list, df_new, df_p1, df_p2, df)
 
