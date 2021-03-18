@@ -441,9 +441,10 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
 ##### Simulation pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
-n = 2000 # number of periods in each simulation
-sim = 50 # number of simulations
-experiment = 1 # number of experimentation periods where players randomly make decisions
+n = 1000 # number of periods in each simulation
+sim = 100 # number of simulations
+experiment = 120 # number of experimentation periods where players randomly make decisions
+beta = 0.05
 
 # set up the joint density matrix
 joint_density_all = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
@@ -459,16 +460,18 @@ for (s in 1:sim){
   history_p2 = rep(0, n)
   
   # calculate the experimentation periods with random starting decisions
-  history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
-  history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
+  history_p1[1:experiment] = c(rep(1, experiment/6), rep(1, experiment/6), rep(2, experiment/6),
+                               rep(2, experiment/6), rep(3, experiment/6), rep(3, experiment/6))
+  history_p2[1:experiment] = c(rep(2, experiment/6), rep(3, experiment/6), rep(3, experiment/6),
+                               rep(1, experiment/6), rep(1, experiment/6), rep(2, experiment/6))
   
   # set up the joint density matrix for the current simulation
   joint_density[[s]] = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r_logit(mu, c(beta,beta,beta), i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r_logit(mu, c(beta,beta,beta), i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
@@ -493,7 +496,7 @@ for (s in 1:sim){
   )
   
   # graph the decision making
-  title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
+  title = paste('logit_hm2000r', 'MV', 'sim', as.character(s), sep = '_')
   file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
   file = paste(file, ".png", sep = "")
   png(file, width = 1500, height = 400)
@@ -515,7 +518,7 @@ for (s in 1:sim){
 }
 
 # finalize the joint density matrix
-xtable(joint_density[[1]])
+#xtable(joint_density[[1]])
 
 for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
