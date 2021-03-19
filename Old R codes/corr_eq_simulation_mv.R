@@ -441,9 +441,9 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
 ##### Simulation pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
-n = 1000 # number of periods in each simulation
-sim = 100 # number of simulations
-experiment = 120 # number of experimentation periods where players randomly make decisions
+n = 500 # number of periods in each simulation
+sim = 500 # number of simulations
+experiment = 60 # number of experimentation periods where players randomly make decisions
 beta = 0.05
 
 # set up the joint density matrix
@@ -456,22 +456,45 @@ joint_density = list()
 for (s in 1:sim){
   
   # set up the vectors for choices and game parameters
-  history_p1 = rep(0, n)
-  history_p2 = rep(0, n)
-  
-  # calculate the experimentation periods with random starting decisions
-  history_p1[1:experiment] = c(rep(1, experiment/6), rep(1, experiment/6), rep(2, experiment/6),
-                               rep(2, experiment/6), rep(3, experiment/6), rep(3, experiment/6))
-  history_p2[1:experiment] = c(rep(2, experiment/6), rep(3, experiment/6), rep(3, experiment/6),
-                               rep(1, experiment/6), rep(1, experiment/6), rep(2, experiment/6))
-  
+  history_p1 = rep(0,n)
+  history_p2 = rep(0,n)
+
   # set up the joint density matrix for the current simulation
   joint_density[[s]] = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
   
+  # calculate the experimentation periods with random starting decisions
+  for (h in 1:experiment){
+    seed = runif(1,0,1)
+    if (seed <= 0.17){
+      history_p1[h] = 1
+      history_p2[h] = 2
+    }
+    else if (seed <= 0.33){
+      history_p1[h] = 2
+      history_p2[h] = 1
+    }
+    else if (seed <= 0.5){
+      history_p1[h] = 1
+      history_p2[h] = 3
+    }
+    else if (seed <= 0.67){
+      history_p1[h] = 3
+      history_p2[h] = 1
+    }
+    else if (seed <= 0.83){
+      history_p1[h] = 2
+      history_p2[h] = 3
+    }
+    else{
+      history_p1[h] = 3
+      history_p2[h] = 2
+    }
+  }
+  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r_logit(mu, c(beta,beta,beta), i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r_logit(mu, c(beta,beta,beta), i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
@@ -495,26 +518,26 @@ for (s in 1:sim){
     period = 1:n
   )
   
-  # graph the decision making
-  title = paste('logit_hm2000r', 'MV', 'sim', as.character(s), sep = '_')
-  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
-  file = paste(file, ".png", sep = "")
-  png(file, width = 1500, height = 400)
-  
-  pic = ggplot(data = df) +
-    geom_line(aes(x=period, y=p1_choice, colour='blue')) +
-    geom_line(aes(x=period, y=p2_choice, colour='red')) +
-    scale_x_discrete(name='period', waiver()) +
-    scale_y_continuous(name='decision', limits=c(1,3)) +
-    ggtitle(title) + 
-    theme_bw() + 
-    scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
-    theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
-          axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
-          axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
-  
-  print(pic)
-  dev.off()
+  # # graph the decision making
+  # title = paste('logit_hm2000r', 'MV', 'sim', as.character(s), sep = '_')
+  # file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
+  # file = paste(file, ".png", sep = "")
+  # png(file, width = 1500, height = 400)
+  # 
+  # pic = ggplot(data = df) +
+  #   geom_line(aes(x=period, y=p1_choice, colour='blue')) +
+  #   geom_line(aes(x=period, y=p2_choice, colour='red')) +
+  #   scale_x_discrete(name='period', waiver()) +
+  #   scale_y_continuous(name='decision', limits=c(1,3)) +
+  #   ggtitle(title) + 
+  #   theme_bw() + 
+  #   scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
+  #   theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+  #         axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+  #         axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  # 
+  # print(pic)
+  # dev.off()
 }
 
 # finalize the joint density matrix
@@ -524,7 +547,7 @@ for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
 }
 joint_density_all = joint_density_all / sim
-xtable(joint_density_all, caption = title)
+xtable(joint_density_all)
 
 
 ##### Simulation pair level graph and joint density - HM2001 #####
