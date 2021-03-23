@@ -284,10 +284,10 @@ for (i in 1:length(uniquetreatment)){
 df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]])
 
 # add new group id
-df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
+df$cluster_id = paste(df$session_round_id, df$player_code)
 
 # update dta file
-write_dta(df_new,here("Data", "stata_pool.dta"))
+write_dta(df,here("Data", "stata_pool.dta"))
 rm(df_list, df_new, df_p1, df_p2, df)
 
 ##### Pool p1 and p2 data and reconstrcut the dataset to study switch and avgpaydiff #####
