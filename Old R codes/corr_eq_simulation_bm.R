@@ -343,10 +343,10 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
 ##### Pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1500 # HM2000 probability parameter
-n = 1000 # number of periods in each simulation
-sim = 100 # number of simulations
-experiment = 1 # number of experimentation periods where players randomly make decisions
-beta = 0.0093
+n = 500 # number of periods in each simulation
+sim = 500 # number of simulations
+experiment = 60 # number of experimentation periods where players randomly make decisions
+beta = 0.05
 
 # set up the joint density matrix
 joint_density_all = matrix(c(0,0,0,0),2,2)
@@ -358,17 +358,28 @@ joint_density = list()
 for (s in 1:sim){
   
   # set up the vectors for choices and game parameters
-  history_p1 = rep(0, n)
-  history_p2 = rep(0, n)
-  
-  # calculate the experimentation periods with random starting decisions
-  # history_p1[1:experiment] = sample(1:2, experiment, replace = TRUE)
-  # history_p2[1:experiment] = sample(2:2, experiment, replace = TRUE)
-  history_p1[1:experiment] = rep(1, experiment)
-  history_p2[1:experiment] = rep(2, experiment)
+  history_p1 = rep(0,n)
+  history_p2 = rep(0,n)
   
   # set up the joint density matrix for the current simulation
   joint_density[[s]] = matrix(c(0,0,0,0),2,2)
+  
+  # calculate the experimentation periods with random starting decisions
+  for (h in 1:experiment){
+    seed = runif(1,0,1)
+    if (seed <= 0.33){
+      history_p1[h] = 1
+      history_p2[h] = 2
+    }
+    else if (seed <= 0.66){
+      history_p1[h] = 2
+      history_p2[h] = 1
+    }
+    else{
+      history_p1[h] = 2
+      history_p2[h] = 2
+    }
+  }
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
@@ -393,7 +404,7 @@ for (s in 1:sim){
   )
   
   # # graph the decision making
-  # title = paste('logit_hm2000r', 'BM', 'sim', as.character(s), sep = '_')
+  # title = paste('hm2000r', 'BM', 'sim', as.character(s), sep = '_')
   # file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
   # file = paste(file, ".png", sep = "")
   # png(file, width = 400, height = 200)
@@ -415,7 +426,7 @@ for (s in 1:sim){
 }
 
 # finalize the joint density matrix
-xtable(joint_density[[1]])
+#xtable(joint_density[[1]])
 
 for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
