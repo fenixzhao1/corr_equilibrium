@@ -51,14 +51,6 @@ keep game regret information session_round_pair_id round_player round player_cod
 save mv_all.dta, replace
 restore
 
-
-
-
-
-
-
-
-
 * generate treatment dummies
 gen MaxInfo = 0
 replace MaxInfo = 1 if information == "H"
@@ -89,14 +81,51 @@ replace negative_regret_1 = 1 if regret_10  < 0
 
 gen negative_regret_10= negative_regret_1 *regret_10
 
+gen pay_last = player_payoff[_n-1]
+logit player_switch regret_new  ///
+      if game == "BM" & regret==2 & information=="L", cluster(cluster_id)
+
+logit player_switch regret_new  ///
+      if game == "BM" & regret==2 & information=="L", noconstant cluster(cluster_id)
+
+	  
+logit player_switch regret_new negative_regret_new ///
+      if game == "BM" & regret==2 & information=="L", cluster(cluster_id)
+
+logit player_switch regret_new  ///
+      if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
+
+logit player_switch regret_new negative_regret_new ///
+      if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
+
+	  
+	  
+logit player_strategy1  regret_10 negative_regret_10 ///
+      if game == "BM" & regret==2 & information=="L", cluster(cluster_subject_id)
+test regret_10+negative_regret_10=0
+
+logit player_strategy1  regret_10 negative_regret_10 ///
+      if game == "BM" & regret==2 & information=="H", cluster(cluster_subject_id)
+test regret_10+negative_regret_10=0
+
+
+logit player_strategy1  regret_10 negative_regret_10 ///
+      if game == "BM" & regret==3 & information=="H", cluster(cluster_subject_id)
+test regret_10+negative_regret_10=0
+
+
+
+
 reg player_strategy1  regret_10 ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_subject_id)
 
-logit player_strategy1  regret_10 ///
-      if game == "BM" & regret==3 & information=="L", noconstant cluster(cluster_subject_id)
 
-reg player_strategy1  regret_10 negative_regret_10 ///
-      if game == "BM" & regret==3 & information=="L", cluster(cluster_subject_id)
+	  
+logit player_strategy1  regret_10 ///
+      if game == "BM" & regret==2 & information=="L", noconstant cluster(cluster_subject_id)	  
+	  
+
+
 test regret_10+negative_regret_10=0
 
  logit player_strategy1  regret_10 negative_regret_10 ///
@@ -150,9 +179,7 @@ reg player_strategy1  regret_10 negative_regret_10 ///
 eg player_strategy1  player_avgpay1  player_avgpay0 ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
 	  	  	   	  
-reg player_switch regret_new  negative_regret_new  ///
-      if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
-	  	  
+
 reg player_strategy1  regret_10 negative_regret_10 ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
 
@@ -167,25 +194,23 @@ logit player_strategy1  regret_10 negative_regret_10 ///
 restore
 
 	  
+ 
 	  
-	  
-	  
-	  
-	  
+logit player_strategy1  regret_10 negative_regret_10 ///
+      if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
+
 	  
 	  
 	  
 
 
-logit player_switch  regret_new   negative_regret_new ///
+logit player_switch  regret_new    ///
       if game == "BM" & regret==3 & information=="L", noconstant cluster(cluster_id)
 
 logit player_switch  regret_hm  ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
 	  
 	  
-logit player_strategy1  regret_10 ///
-      if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
 
 logit player_strategy1  player_avgpay1  player_avgpay0 ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
@@ -202,7 +227,7 @@ reg player_strategy1  player_avgpay1  player_avgpay0 ///
 	  
 
 logit player_switch  regret_10 ///
-      if game == "BM" & regret==3 & information=="L", noconstant cluster(cluster_id)
+      if game == "BM" & regret==2 & information=="L", noconstant cluster(cluster_id)
 
 logit player_switch  regret_new ///
       if game == "BM" & regret==3 & information=="L",cluster(cluster_id)
