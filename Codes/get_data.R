@@ -46,12 +46,37 @@ rm(d)
 full_data = arrange(full_data, full_data$session_code, full_data$subsession_id, full_data$id_in_subsession, full_data$tick)
 full_data = full_data %>% filter(round>2) %>% mutate(period = tick + 1)
 
+
+## fix regret_bars
+full_data$p1_regret0_copy<-full_data$p1_regret0
+full_data$p2_regret0_copy<-full_data$p2_regret0
+
+full_data$p1_regret1_copy<-full_data$p1_regret1
+full_data$p2_regret1_copy<-full_data$p2_regret1
+
+full_data$p1_regret2_copy<-full_data$p1_regret2
+full_data$p2_regret2_copy<-full_data$p2_regret2
+
+full_data$p1_regret0[full_data$game == 'BM2']<-full_data$p1_regret1_copy[full_data$game == 'BM2']
+full_data$p1_regret1[full_data$game == 'BM2']<-full_data$p1_regret0_copy[full_data$game == 'BM2']
+
+full_data$p2_regret0[full_data$game == 'BM2']<-full_data$p2_regret1_copy[full_data$game == 'BM2']
+full_data$p2_regret1[full_data$game == 'BM2']<-full_data$p2_regret0_copy[full_data$game == 'BM2']
+
+full_data$p1_regret1[full_data$game == 'MV2']<-full_data$p1_regret2_copy[full_data$game == 'MV2']
+full_data$p1_regret2[full_data$game == 'MV2']<-full_data$p1_regret1_copy[full_data$game == 'MV2']
+
+full_data$p2_regret0[full_data$game == 'MV2']<-full_data$p2_regret2_copy[full_data$game == 'MV2']
+full_data$p2_regret2[full_data$game == 'MV2']<-full_data$p2_regret0_copy[full_data$game == 'MV2']
+
+
 # unify matrices
 full_data$p1_strategy[full_data$game == 'BM2']<-1-full_data$p1_strategy[full_data$game == 'BM2']
 full_data$p2_strategy[full_data$game == 'BM2']<-1-full_data$p2_strategy[full_data$game == 'BM2']
 
 full_data$p1_strategy[full_data$game == 'MV2' & full_data$p1_strategy>0]<-2/full_data$p1_strategy[full_data$game == 'MV2' & full_data$p1_strategy>0]
 full_data$p2_strategy[full_data$game == 'MV2' & full_data$p2_strategy!=1]<-2-full_data$p2_strategy[full_data$game == 'MV2' & full_data$p2_strategy!=1]
+
 
 full_data$game[full_data$game=='BM1']<-'BM'
 full_data$game[full_data$game == 'BM2']<-'BM'
@@ -284,11 +309,13 @@ for (i in 1:length(uniquetreatment)){
 df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]])
 
 # add new group id
-df_new$cluster_id = paste(df_new$session_round_id, df_new$player_code)
+df$cluster_id = paste(df$session_round_id, df$player_code)
 
 # update dta file
-write_dta(df_new,here("Data", "stata_pool.dta"))
+write_dta(df,here("Data", "stata_pool.dta"))
 rm(df_list, df_new, df_p1, df_p2, df)
+
+
 
 ##### Pool p1 and p2 data and reconstrcut the dataset to study switch and avgpaydiff #####
 #p1 dataset
