@@ -8,6 +8,7 @@ mu = 1000 # HM2000 probability parameter
 n = 2000 # number of periods in each simulation
 sim = 50 # number of simulations
 experiment = 1 # number of experimentation periods where players randomly make decisions
+pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 
 # set up the joint density matrix
 joint_density_all = matrix(c(0,0,0,0,0,0,0,0,0),3,3)

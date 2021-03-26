@@ -92,9 +92,6 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
 # build the decision function based on logit response
 decision_hm2000_logit = function(mu, beta, iteration, my_history, your_history){
   
-  # get my most recent decision
-  lastchoice = my_history[iteration-1]
-  
   # compute regret for all possible decisions
   regret1 = regret_hm2000(1, iteration, my_history, your_history)
   regret2 = regret_hm2000(2, iteration, my_history, your_history)
@@ -116,6 +113,9 @@ decision_hm2000_logit = function(mu, beta, iteration, my_history, your_history){
 
 # build the decision function based on logit response and conditional regret
 decision_hm2000_logitR = function(mu, beta, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
   
   # compute regret for all possible decisions
   regret1 = regret_hm2000(1, iteration, my_history, your_history)
@@ -267,6 +267,9 @@ decision_avgpay_logit = function(mu, beta, iteration, my_history, your_history){
 # build the decision function based on logit response and conditional regret
 decision_avgpay_logitR = function(mu, beta, iteration, my_history, your_history){
   
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
   # compute regret for all possible decisions
   regret1 = regret_avgpay(1, iteration, my_history, your_history)
   regret2 = regret_avgpay(2, iteration, my_history, your_history)
@@ -416,6 +419,9 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
 
 # build the decision function based on logit response and conditional regret
 decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
   
   # compute regret for all possible decisions
   regret1 = regret_hm2000r(1, iteration, my_history, your_history)
