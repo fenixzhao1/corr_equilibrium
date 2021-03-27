@@ -1,6 +1,10 @@
 capture program drop mv_game_ml
 capture program drop mv_game_ml_2
 capture program drop mv_game_ml_3
+capture program drop mv_game_ml_4
+capture program drop mv_game_ml_5
+capture program drop mv_game_terco
+
 
 program define mv_game_ml
 args logl beta1 beta2 beta0 beta3
@@ -49,14 +53,103 @@ replace `logl'=ln(p1*player_strategy_1+(p2)*(player_strategy_2)+(1-p1-p2)*player
 }
 end
 
+program define mv_game_ml_4
+args logl beta1  beta5
+quietly{
+replace p1=. 
+replace p2=. 
+replace p0=.
+replace p1=exp(`beta1'*player_avgpay1)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta5'+`beta1'*player_avgpay0)) if p1==.
+replace p2=exp(`beta1'*player_avgpay2)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta5'+`beta1'*player_avgpay0)) if p2==.
+replace p0=exp(`beta5'+`beta1'*player_avgpay0)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta5'+`beta1'*player_avgpay0)) if p0==.
 
+replace `logl'=ln(p1*player_strategy_1+(p2)*(player_strategy_2)+(p0)*player_strategy_0)
+}
+end
 
+program define mv_game_ml_5
+args logl beta1 
+quietly{
+replace p1=. 
+replace p2=. 
+replace p0=.
+replace p1=exp(`beta1'*player_avgpay1)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta1'*player_avgpay0)) if p1==.
+replace p2=exp(`beta1'*player_avgpay2)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta1'*player_avgpay0)) if p2==.
+replace p0=exp(`beta1'*player_avgpay0)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta1'*player_avgpay0)) if p0==.
 
+replace `logl'=ln(p1*player_strategy_1+(p2)*(player_strategy_2)+(p0)*player_strategy_0)
+}
+end
+
+program define mv_game_terco
+args logl beta1 
+quietly{
+replace p1=. 
+replace p2=. 
+replace p0=.
+replace p1=(exp(`beta1'*player_avgpay1)*0.2)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta1'*player_avgpay0)) if p1==.
+replace p2=(exp(`beta1'*player_avgpay2)*0.2)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta1'*player_avgpay0)) if p2==.
+replace p0=(exp(`beta1'*player_avgpay0)*0.2)/(exp(`beta1'*player_avgpay1)+exp(`beta1'*player_avgpay2)+exp(`beta1'*player_avgpay0)) if p0==.
+
+replace `logl'=ln(p1*player_strategy_1*(1-jugado_1)+(1-p2-p0)*player_strategy_1*(jugado_1)+(p2)*(player_strategy_2)*(1-jugado_2)+(1-p1-p0)*(jugado_2)*(player_strategy_2)+(p0)*player_strategy_0*(1-jugado_0)+(1-p1-p2)*jugado_0*player_strategy_0)
+}
+end
 
 use mv_all.dta, clear
 gen double p1=.
 gen double p2=.
 gen double p0=.
+g player_strategy_1=player_strategy==1
+g player_strategy_2=player_strategy==2
+g player_strategy_0=player_strategy==0
+
+gen last_played = player_strategy[_n-1]
+replace last_played =. if period==1
+
+g jugado_1=last_played==1
+g jugado_2=last_played==2
+g jugado_0=last_played==0
+
+preserve
+keep if information=="L" & regret==3
+mat start=(0.03)
+ml model lf mv_game_terco /beta1 , cluster(cluster_subject_id)
+ml init start, copy
+ml max, trace search(on)
+restore
+
+
+
+
+preserve
+keep if information=="L" & regret==2
+mat start=(0.03)
+ml model lf mv_game_ml_5 /beta1 , cluster(cluster_subject_id)
+ml init start, copy
+ml max, trace search(on)
+restore
+
+
+
+
+
+preserve
+keep if information=="L" & regret==3 
+mat start=(0.0003, 0.0007)
+ml model lf mv_game_ml_4 /beta1 /beta5, cluster(cluster_subject_id)
+ml init start, copy
+ml max, trace search(on)
+restore
+
+preserve
+keep if information=="L" & regret==2 
+mat start=(0.0003, 0.0007)
+ml model lf mv_game_ml_4 /beta1 /beta5, cluster(cluster_subject_id)
+ml init start, copy
+ml max, trace search(on)
+restore
+
+
 
 g player_strategy_1=switch_dir==1
 g player_strategy_2=switch_dir==2
@@ -145,6 +238,7 @@ ml model lf mv_game_ml_2 /beta1 /beta2 /beta4 /beta5, cluster(cluster_subject_id
 ml init start, copy
 ml max, trace search(on)
 restore
+
 
 
 
