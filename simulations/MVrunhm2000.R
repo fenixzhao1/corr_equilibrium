@@ -5,9 +5,10 @@ library(xtable)
 ##### Simulation pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
-n = 2000 # number of periods in each simulation
-sim = 50 # number of simulations
-experiment = 1 # number of experimentation periods where players randomly make decisions
+n = 500 # number of periods in each simulation
+sim = 500 # number of simulations
+experiment = 100 # number of experimentation periods where players randomly make decisions
+beta = 0.842
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 
 # set up the joint density matrix
@@ -32,8 +33,8 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
+    history_p1[i] = decision_avgpay_logitR(mu, beta, i, history_p1, history_p2)
+    history_p2[i] = decision_avgpay_logitR(mu, beta, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
@@ -57,36 +58,36 @@ for (s in 1:sim){
     period = 1:n
   )
   
-  # graph the decision making
-  title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
-  file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
-  file = paste(file, ".png", sep = "")
-  png(file, width = 1500, height = 400)
-  
-  pic = ggplot(data = df) +
-    geom_line(aes(x=period, y=p1_choice, colour='blue')) +
-    geom_line(aes(x=period, y=p2_choice, colour='red')) +
-    scale_x_discrete(name='period', waiver()) +
-    scale_y_continuous(name='decision', limits=c(1,3)) +
-    ggtitle(title) + 
-    theme_bw() + 
-    scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
-    theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
-          axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
-          axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
-  
-  print(pic)
-  dev.off()
+  # # graph the decision making
+  # title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
+  # file = paste("D:/Dropbox/Working Papers/Correlated Equilibrium/data/simulations/", title, sep = "")
+  # file = paste(file, ".png", sep = "")
+  # png(file, width = 1500, height = 400)
+  # 
+  # pic = ggplot(data = df) +
+  #   geom_line(aes(x=period, y=p1_choice, colour='blue')) +
+  #   geom_line(aes(x=period, y=p2_choice, colour='red')) +
+  #   scale_x_discrete(name='period', waiver()) +
+  #   scale_y_continuous(name='decision', limits=c(1,3)) +
+  #   ggtitle(title) + 
+  #   theme_bw() + 
+  #   scale_colour_manual(values=c('blue', 'red'), labels=c('p1', 'p2')) +
+  #   theme(plot.title = element_text(hjust = 0.5, size = 20), legend.text = element_text(size = 15),
+  #         axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+  #         axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  # 
+  # print(pic)
+  # dev.off()
 }
 
-# finalize the joint density matrix
-xtable(joint_density[[1]])
+# # finalize the joint density matrix
+# xtable(joint_density[[1]])
 
 for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
 }
 joint_density_all = joint_density_all / sim
-xtable(joint_density_all, caption = title)
+xtable(joint_density_all)
 
 
 ##### Transition between cells #####
