@@ -201,8 +201,41 @@ decision_avgpay_logit = function(mu, beta, iteration, my_history, your_history){
   
   # randomly determine the decision
   seed = runif(1,0,1)
-  if (seed <= prob[1]){return(c(1,prob[1],prob[2]))}
-  else{return(c(2,prob[1], prob[2]))}
+  if (seed <= prob[1]){return(1)}
+  else{return(2)}
+}
+
+
+# truncated logit decision
+decision_avgpay_logit_truncate = function(mu, beta, iteration, my_history, your_history){
+  
+  # compute regret for all possible decisions
+  regret1 = regret_avgpay(1, iteration, my_history, your_history)
+  regret2 = regret_avgpay(2, iteration, my_history, your_history)
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # probability condition on current choice and regret
+  # current choice is 1
+  if (lastchoice == 1){
+    if (regret2 >= regret1){b=beta[1]}
+    else{b=beta[2]}
+  }
+  # current choice is 2
+  else{
+    if (regret1>=regret2){b=beta[1]}
+    else{b=beta[2]}
+  }
+  # using logit response to calculate the probability of choosing each strategy
+  prob = c(0,0)
+  prob[1] = exp(b*regret1)/(exp(b*regret1) + exp(b*regret2))
+  prob[2] = exp(b*regret2)/(exp(b*regret1) + exp(b*regret2))
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else{return(2)}
 }
 
 
@@ -350,6 +383,39 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
   prob = c(0,0)
   prob[1] = exp(beta*regret1)/(exp(beta*regret1) + exp(beta*regret2))
   prob[2] = exp(beta*regret2)/(exp(beta*regret1) + exp(beta*regret2))
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else{return(2)}
+}
+
+
+# truncated logit decision
+decision_hm2000r_logit_truncate = function(mu, beta, iteration, my_history, your_history){
+  
+  # compute regret for all possible decisions
+  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
+  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # probability condition on current choice and regret
+  # current choice is 1
+  if (lastchoice == 1){
+    if (regret2 >= regret1){b=beta[1]}
+    else{b=beta[2]}
+  }
+  # current choice is 2
+  else{
+    if (regret1>=regret2){b=beta[1]}
+    else{b=beta[2]}
+  }
+  # using logit response to calculate the probability of choosing each strategy
+  prob = c(0,0)
+  prob[1] = exp(b*regret1)/(exp(b*regret1) + exp(b*regret2))
+  prob[2] = exp(b*regret2)/(exp(b*regret1) + exp(b*regret2))
   
   # randomly determine the decision
   seed = runif(1,0,1)
