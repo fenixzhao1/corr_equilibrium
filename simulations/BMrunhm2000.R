@@ -11,7 +11,8 @@ mu = 1500 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = 0.099
+beta = 2.9
+Delta = 0.48
 pay_chicken = matrix(c(100,200,600,500),2,2) # payoff matrix 2x2
 
 # set up the joint density matrix
@@ -38,8 +39,8 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_avgpay_logitR(mu, beta, i, history_p1, history_p2)
-    history_p2[i] = decision_avgpay_logitR(mu, beta, i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}

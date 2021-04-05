@@ -290,7 +290,7 @@ decision_avgpay_InertiaLogit = function(mu, beta, Delta, iteration, my_history, 
     # using logit response to calculate the probability of choosing each strategy
     prob = c(0,0)
     prob[2] = exp(beta*(regret2-regret1))*Delta/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)))
-    prob[1] = 1 - prob[1]
+    prob[1] = 1 - prob[2]
   }
   
   # calculate the decision when my last choice is 2
