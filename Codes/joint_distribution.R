@@ -7,7 +7,7 @@ library(dplyr)
 library(xtable)
 library(haven)
 
-load(here('Data','data_all.Rda'))
+full_data = read.csv(here('Data','data_all.csv'))
 
 ##### Joint density #####
 uniquetreatment = unique(full_data$treatment)
@@ -102,14 +102,14 @@ for (i in 1:length(uniquetreatment)){
 }
 
 # table output
-xtable(density_matrix[[1]], digits = 2, caption = uniquetreatment[1])
-xtable(density_matrix[[2]], digits = 2, caption = uniquetreatment[2])
-xtable(density_matrix[[3]], digits = 2, caption = uniquetreatment[3])
-xtable(density_matrix[[4]], digits = 2, caption = uniquetreatment[4])
-xtable(density_matrix[[5]], digits = 2, caption = uniquetreatment[5])
-xtable(density_matrix[[6]], digits = 2, caption = uniquetreatment[6])
-xtable(density_matrix[[7]], digits = 2, caption = uniquetreatment[7])
-xtable(density_matrix[[8]], digits = 2, caption = uniquetreatment[8])
+xtable(density_matrix[[1]], digits = 2, caption = as.character(uniquetreatment[1]))
+xtable(density_matrix[[2]], digits = 2, caption = as.character(uniquetreatment[2]))
+xtable(density_matrix[[3]], digits = 2, caption = as.character(uniquetreatment[3]))
+xtable(density_matrix[[4]], digits = 2, caption = as.character(uniquetreatment[4]))
+xtable(density_matrix[[5]], digits = 2, caption = as.character(uniquetreatment[5]))
+xtable(density_matrix[[6]], digits = 2, caption = as.character(uniquetreatment[6]))
+xtable(density_matrix[[7]], digits = 2, caption = as.character(uniquetreatment[7]))
+xtable(density_matrix[[8]], digits = 2, caption = as.character(uniquetreatment[8]))
 
 
 de<-as.data.frame(cbind(c(density_matrix[[4]])*total_obs[[4]],c(density_matrix[[5]])*total_obs[[5]]))

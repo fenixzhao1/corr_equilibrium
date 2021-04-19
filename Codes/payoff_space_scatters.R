@@ -6,8 +6,7 @@ library(ggplot2)
 library(dplyr)
 library(haven)
 
-
-load(here('Data','data_all.Rda'))
+full_data = read.csv(here('Data','data_all.csv'))
 
 plot_no_data <- FALSE #save space without data points
 
