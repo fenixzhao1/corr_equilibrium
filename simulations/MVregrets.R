@@ -467,6 +467,67 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
 
 
 # build the decision function based on logit response and conditional regret
+decision_hm2000r_logit_truncate = function(mu, b, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
+  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
+  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
+  
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret1)+b[2]*(regret1-regret1)*ifelse(regret1-regret1<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret1)+b[2]*(regret2-regret1)*ifelse(regret2-regret1<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret1)+b[2]*(regret3-regret1)*ifelse(regret3-regret1<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1/(exp1+exp2+exp3)
+    prob[2] = exp2/(exp1+exp2+exp3)
+    prob[3] = exp3/(exp1+exp2+exp3)
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 2){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret2)+b[2]*(regret1-regret2)*ifelse(regret1-regret2<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret2)+b[2]*(regret2-regret2)*ifelse(regret2-regret2<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret2)+b[2]*(regret3-regret2)*ifelse(regret3-regret2<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1/(exp1+exp2+exp3)
+    prob[2] = exp2/(exp1+exp2+exp3)
+    prob[3] = exp3/(exp1+exp2+exp3)
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 3){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret3)+b[2]*(regret1-regret3)*ifelse(regret1-regret3<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret3)+b[2]*(regret2-regret3)*ifelse(regret2-regret3<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret3)+b[2]*(regret3-regret3)*ifelse(regret3-regret3<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1/(exp1+exp2+exp3)
+    prob[2] = exp2/(exp1+exp2+exp3)
+    prob[3] = exp3/(exp1+exp2+exp3)
+  }
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
+  else{return(3)}
+}
+
+
+# build the decision function based on logit response and conditional regret
 decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history){
   
   # get my most recent decision
