@@ -8,10 +8,11 @@ source("BMregrets.R")
 # set up the parameters for the simulation
 
 mu = 1500 # HM2000 probability parameter
-n = 1000 # number of periods in each simulation
-sim = 100 # number of simulations
+n = 500 # number of periods in each simulation
+sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = 0.05
+beta = 2.9
+Delta = 0.48
 pay_chicken = matrix(c(100,200,600,500),2,2) # payoff matrix 2x2
 
 # set up the joint density matrix
@@ -28,18 +29,18 @@ for (s in 1:sim){
   history_p2 = rep(0, n)
   
   # calculate the experimentation periods with random starting decisions
-  # history_p1[1:experiment] = sample(1:2, experiment, replace = TRUE)
-  # history_p2[1:experiment] = sample(2:2, experiment, replace = TRUE)
-  history_p1[1:experiment] = rep(1, experiment)
-  history_p2[1:experiment] = rep(2, experiment)
+  history_p1[1:experiment] = sample(1:2, experiment, replace = TRUE)
+  history_p2[1:experiment] = sample(1:2, experiment, replace = TRUE)
+  #history_p1[1:experiment] = rep(1, experiment)
+  #history_p2[1:experiment] = rep(2, experiment)
   
   # set up the joint density matrix for the current simulation
   joint_density[[s]] = matrix(c(0,0,0,0),2,2)
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r_logit(mu, beta, i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r_logit(mu, beta, i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
@@ -59,12 +60,12 @@ for (s in 1:sim){
   )
 }
 
-# finalize the joint density matrix
-xtable(joint_density[[1]])
+## finalize the joint density matrix
+#xtable(joint_density[[1]])
 
 for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
 }
 joint_density_all = joint_density_all / sim
-xtable(joint_density_all, caption = title)
+xtable(joint_density_all)
 

@@ -443,8 +443,8 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
 mu = 1000 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
-experiment = 60 # number of experimentation periods where players randomly make decisions
-beta = 0.05
+experiment = 100 # number of experimentation periods where players randomly make decisions
+beta = 1.635
 
 # set up the joint density matrix
 joint_density_all = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
@@ -463,38 +463,41 @@ for (s in 1:sim){
   joint_density[[s]] = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
   
   # calculate the experimentation periods with random starting decisions
-  for (h in 1:experiment){
-    seed = runif(1,0,1)
-    if (seed <= 0.17){
-      history_p1[h] = 1
-      history_p2[h] = 2
-    }
-    else if (seed <= 0.33){
-      history_p1[h] = 2
-      history_p2[h] = 1
-    }
-    else if (seed <= 0.5){
-      history_p1[h] = 1
-      history_p2[h] = 3
-    }
-    else if (seed <= 0.67){
-      history_p1[h] = 3
-      history_p2[h] = 1
-    }
-    else if (seed <= 0.83){
-      history_p1[h] = 2
-      history_p2[h] = 3
-    }
-    else{
-      history_p1[h] = 3
-      history_p2[h] = 2
-    }
-  }
+  history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
+  history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
+  
+  # for (h in 1:experiment){
+  #   seed = runif(1,0,1)
+  #   if (seed <= 0.17){
+  #     history_p1[h] = 1
+  #     history_p2[h] = 2
+  #   }
+  #   else if (seed <= 0.33){
+  #     history_p1[h] = 2
+  #     history_p2[h] = 1
+  #   }
+  #   else if (seed <= 0.5){
+  #     history_p1[h] = 1
+  #     history_p2[h] = 3
+  #   }
+  #   else if (seed <= 0.67){
+  #     history_p1[h] = 3
+  #     history_p2[h] = 1
+  #   }
+  #   else if (seed <= 0.83){
+  #     history_p1[h] = 2
+  #     history_p2[h] = 3
+  #   }
+  #   else{
+  #     history_p1[h] = 3
+  #     history_p2[h] = 2
+  #   }
+  # }
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r_logit(mu, c(beta,beta,beta), i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r_logit(mu, c(beta,beta,beta), i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
