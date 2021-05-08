@@ -161,7 +161,7 @@ decision_hm2000_logitR = function(mu, beta, iteration, my_history, your_history)
 
 
 ##### Average Historical Payoff (regret2) #####
-# build the regret function for action m (m is 1,2,or 3) under HM2000
+# regret under hist-avg
 regret_avgpay = function(m, iteration, my_history, your_history){
   
   # calculate the length of history
@@ -186,8 +186,7 @@ regret_avgpay = function(m, iteration, my_history, your_history){
   }
 }
 
-
-# build the decision function based on the regret function under HM2000
+# decision under hist-avg
 decision_avgpay = function(mu, iteration, my_history, your_history){
   
   # get my most recent decision
@@ -241,8 +240,7 @@ decision_avgpay = function(mu, iteration, my_history, your_history){
   }
 }
 
-
-# build the decision function based on logit response
+# decision under hist-avg logit response spec 1
 decision_avgpay_logit = function(mu, beta, iteration, my_history, your_history){
   
   # compute regret for all possible decisions
@@ -263,8 +261,7 @@ decision_avgpay_logit = function(mu, beta, iteration, my_history, your_history){
   else{return(c(3, prob[1], prob[2], prob[3]))}
 }
 
-
-# build the decision function based on logit response and conditional regret
+# decision under hist-avg logit response spec 2
 decision_avgpay_logitR = function(mu, beta, iteration, my_history, your_history){
   
   # get my most recent decision
@@ -312,8 +309,7 @@ decision_avgpay_logitR = function(mu, beta, iteration, my_history, your_history)
   else{return(3)}
 }
 
-
-# build the inertia logit response
+# decision under hist-avg inertia logit response 
 decision_avgpay_InertiaLogit = function(mu, beta, Delta, iteration, my_history, your_history){
   
   # get my most recent decision
@@ -361,9 +357,129 @@ decision_avgpay_InertiaLogit = function(mu, beta, Delta, iteration, my_history, 
   else{return(3)}
 }
 
+# decision under hist-avg truncated logit response 
+decision_avgpay_logit_truncate = function(mu, b, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_avgpay(1, iteration, my_history, your_history)
+  regret2 = regret_avgpay(2, iteration, my_history, your_history)
+  regret3 = regret_avgpay(3, iteration, my_history, your_history)
+  
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret1)+b[2]*(regret1-regret1)*ifelse(regret1-regret1<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret1)+b[2]*(regret2-regret1)*ifelse(regret2-regret1<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret1)+b[2]*(regret3-regret1)*ifelse(regret3-regret1<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1/(exp1+exp2+exp3)
+    prob[2] = exp2/(exp1+exp2+exp3)
+    prob[3] = exp3/(exp1+exp2+exp3)
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 2){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret2)+b[2]*(regret1-regret2)*ifelse(regret1-regret2<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret2)+b[2]*(regret2-regret2)*ifelse(regret2-regret2<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret2)+b[2]*(regret3-regret2)*ifelse(regret3-regret2<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1/(exp1+exp2+exp3)
+    prob[2] = exp2/(exp1+exp2+exp3)
+    prob[3] = exp3/(exp1+exp2+exp3)
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 3){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret3)+b[2]*(regret1-regret3)*ifelse(regret1-regret3<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret3)+b[2]*(regret2-regret3)*ifelse(regret2-regret3<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret3)+b[2]*(regret3-regret3)*ifelse(regret3-regret3<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1/(exp1+exp2+exp3)
+    prob[2] = exp2/(exp1+exp2+exp3)
+    prob[3] = exp3/(exp1+exp2+exp3)
+  }
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
+  else{return(3)}
+}
+
+# decision under hist-avg truncated and inertia logit response 
+decision_avgpay_InertiaLogit_truncate = function(mu, b, Delta, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_avgpay(1, iteration, my_history, your_history)
+  regret2 = regret_avgpay(2, iteration, my_history, your_history)
+  regret3 = regret_avgpay(3, iteration, my_history, your_history)
+  
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret1)+b[2]*(regret1-regret1)*ifelse(regret1-regret1<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret1)+b[2]*(regret2-regret1)*ifelse(regret2-regret1<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret1)+b[2]*(regret3-regret1)*ifelse(regret3-regret1<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[2] = exp2*Delta/(exp1+exp2+exp3)
+    prob[3] = exp3*Delta/(exp1+exp2+exp3)
+    prob[1] = 1 - prob[2] - prob[3]
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 2){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret2)+b[2]*(regret1-regret2)*ifelse(regret1-regret2<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret2)+b[2]*(regret2-regret2)*ifelse(regret2-regret2<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret2)+b[2]*(regret3-regret2)*ifelse(regret3-regret2<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1*Delta/(exp1+exp2+exp3)
+    prob[3] = exp3*Delta/(exp1+exp2+exp3)
+    prob[2] = 1 - prob[1] - prob[3]
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 3){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret3)+b[2]*(regret1-regret3)*ifelse(regret1-regret3<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret3)+b[2]*(regret2-regret3)*ifelse(regret2-regret3<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret3)+b[2]*(regret3-regret3)*ifelse(regret3-regret3<0,1,0))
+    
+    prob = c(0,0,0)
+    prob[1] = exp1*Delta/(exp1+exp2+exp3)
+    prob[2] = exp2*Delta/(exp1+exp2+exp3)
+    prob[3] = 1 - prob[1] - prob[2]
+  }
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
+  else{return(3)}
+}
+
 
 ##### HM2000 revised (regret3) #####
-# build the regret function for action m (m is 1,2,or 3) under HM2000 revised algorithm
+# regret under HM2000 revised
 regret_hm2000r = function(m, iteration, my_history, your_history){
   
   # calculate the length of history
@@ -388,8 +504,7 @@ regret_hm2000r = function(m, iteration, my_history, your_history){
   return(my_regret/period)
 }
 
-
-# build the decision function based on the regret function under HM2000 revised algorithm
+# decision under HM2000 revised
 decision_hm2000r = function(mu, iteration, my_history, your_history){
   
   # get my most recent decision
@@ -443,8 +558,7 @@ decision_hm2000r = function(mu, iteration, my_history, your_history){
   }
 }
 
-
-# build the decision function based on logit response
+# decision under HM2000 logit response spec 1
 decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history){
   
   # compute regret for all possible decisions
@@ -465,8 +579,103 @@ decision_hm2000r_logit = function(mu, beta, iteration, my_history, your_history)
   else{return(3)}
 }
 
+# decision under HM2000 logit response spec 2
+decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
+  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
+  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
+  
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[2] = exp(beta*(regret2-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[3] = exp(beta*(regret3-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 2){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[2] = exp(beta*(regret2-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[3] = exp(beta*(regret3-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 3){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[2] = exp(beta*(regret2-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[3] = exp(beta*(regret3-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+  }
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
+  else{return(3)}
+}
 
-# build the decision function based on logit response and conditional regret
+# decision under HM2000 inertia logit response
+decision_hm2000r_InertiaLogit = function(mu, beta, Delta, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
+  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
+  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
+  
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[2] = exp(beta*(regret2-regret1))*Delta/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[3] = exp(beta*(regret3-regret1))*Delta/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[1] = 1 - prob[2] - prob[3]
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 2){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret2))*Delta/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[3] = exp(beta*(regret3-regret2))*Delta/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[2] = 1 - prob[1] - prob[3]
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 3){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret3))*Delta/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[2] = exp(beta*(regret2-regret3))*Delta/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[3] = 1 - prob[1] - prob[2]
+  }
+  
+  # randomly determine the decision
+  seed = runif(1,0,1)
+  if (seed <= prob[1]){return(1)}
+  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
+  else{return(3)}
+}
+
+# decision under HM2000 truncated logit response
 decision_hm2000r_logit_truncate = function(mu, b, iteration, my_history, your_history){
   
   # get my most recent decision
@@ -526,9 +735,8 @@ decision_hm2000r_logit_truncate = function(mu, b, iteration, my_history, your_hi
   else{return(3)}
 }
 
-
-# build the decision function based on logit response and conditional regret
-decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history){
+# decision under HM2000 truncated and inertia logit response
+decision_hm2000r_InertiaLogit_truncate = function(mu, b, Delta, iteration, my_history, your_history){
   
   # get my most recent decision
   lastchoice = my_history[iteration-1]
@@ -542,58 +750,13 @@ decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history
   if (lastchoice == 1){
     
     # using logit response to calculate the probability of choosing each strategy
-    prob = c(0,0,0)
-    prob[1] = exp(beta*(regret1-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
-    prob[2] = exp(beta*(regret2-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
-    prob[3] = exp(beta*(regret3-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
-  }
-  
-  # calculate the decision when my last choice is 2
-  if (lastchoice == 2){
+    exp1 = exp(b[1]*(regret1-regret1)+b[2]*(regret1-regret1)*ifelse(regret1-regret1<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret1)+b[2]*(regret2-regret1)*ifelse(regret2-regret1<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret1)+b[2]*(regret3-regret1)*ifelse(regret3-regret1<0,1,0))
     
-    # using logit response to calculate the probability of choosing each strategy
     prob = c(0,0,0)
-    prob[1] = exp(beta*(regret1-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
-    prob[2] = exp(beta*(regret2-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
-    prob[3] = exp(beta*(regret3-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
-  }
-  
-  # calculate the decision when my last choice is 2
-  if (lastchoice == 3){
-    
-    # using logit response to calculate the probability of choosing each strategy
-    prob = c(0,0,0)
-    prob[1] = exp(beta*(regret1-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
-    prob[2] = exp(beta*(regret2-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
-    prob[3] = exp(beta*(regret3-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
-  }
-  
-  # randomly determine the decision
-  seed = runif(1,0,1)
-  if (seed <= prob[1]){return(1)}
-  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
-  else{return(3)}
-}
-
-
-# build the inertia logit response
-decision_hm2000r_InertiaLogit = function(mu, beta, Delta, iteration, my_history, your_history){
-  
-  # get my most recent decision
-  lastchoice = my_history[iteration-1]
-  
-  # compute regret for all possible decisions
-  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
-  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
-  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
-  
-  # calculate the decision when my last choice is 1
-  if (lastchoice == 1){
-    
-    # using logit response to calculate the probability of choosing each strategy
-    prob = c(0,0,0)
-    prob[2] = exp(beta*(regret2-regret1))*Delta/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
-    prob[3] = exp(beta*(regret3-regret1))*Delta/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[2] = exp2*Delta/(exp1+exp2+exp3)
+    prob[3] = exp3*Delta/(exp1+exp2+exp3)
     prob[1] = 1 - prob[2] - prob[3]
   }
   
@@ -601,9 +764,13 @@ decision_hm2000r_InertiaLogit = function(mu, beta, Delta, iteration, my_history,
   if (lastchoice == 2){
     
     # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret2)+b[2]*(regret1-regret2)*ifelse(regret1-regret2<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret2)+b[2]*(regret2-regret2)*ifelse(regret2-regret2<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret2)+b[2]*(regret3-regret2)*ifelse(regret3-regret2<0,1,0))
+    
     prob = c(0,0,0)
-    prob[1] = exp(beta*(regret1-regret2))*Delta/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
-    prob[3] = exp(beta*(regret3-regret2))*Delta/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[1] = exp1*Delta/(exp1+exp2+exp3)
+    prob[3] = exp3*Delta/(exp1+exp2+exp3)
     prob[2] = 1 - prob[1] - prob[3]
   }
   
@@ -611,9 +778,13 @@ decision_hm2000r_InertiaLogit = function(mu, beta, Delta, iteration, my_history,
   if (lastchoice == 3){
     
     # using logit response to calculate the probability of choosing each strategy
+    exp1 = exp(b[1]*(regret1-regret3)+b[2]*(regret1-regret3)*ifelse(regret1-regret3<0,1,0))
+    exp2 = exp(b[1]*(regret2-regret3)+b[2]*(regret2-regret3)*ifelse(regret2-regret3<0,1,0))
+    exp3 = exp(b[1]*(regret3-regret3)+b[2]*(regret3-regret3)*ifelse(regret3-regret3<0,1,0))
+    
     prob = c(0,0,0)
-    prob[1] = exp(beta*(regret1-regret3))*Delta/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
-    prob[2] = exp(beta*(regret2-regret3))*Delta/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[1] = exp1*Delta/(exp1+exp2+exp3)
+    prob[2] = exp2*Delta/(exp1+exp2+exp3)
     prob[3] = 1 - prob[1] - prob[2]
   }
   

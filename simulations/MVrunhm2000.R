@@ -1,14 +1,19 @@
 ##### Package and Payoff #####
 # add package
+# rm(list = ls())
 library(ggplot2)
 library(xtable)
+# library(here)
+# setwd("~/Desktop/jotarepos/correq/corr_equilibrium/simulations/")
+# source("BMregrets.R")
+
 ##### Simulation pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
 mu = 1000 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = 1.67
+beta = c(0.99,-0.24)
 Delta = 0.98
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 
@@ -34,8 +39,8 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
+    history_p1[i] = decision_avgpay_logit_truncate(mu, beta, i, history_p1, history_p2)
+    history_p2[i] = decision_avgpay_logit_truncate(mu, beta, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
