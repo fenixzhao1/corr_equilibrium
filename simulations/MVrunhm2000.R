@@ -3,6 +3,7 @@
 # rm(list = ls())
 library(ggplot2)
 library(xtable)
+library(dplyr)
 # library(here)
 # setwd("~/Desktop/jotarepos/correq/corr_equilibrium/simulations/")
 # source("BMregrets.R")
@@ -22,6 +23,14 @@ joint_density_all = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
 
 # set up the joint density matrix for each simulation
 joint_density = list()
+
+# set up the overall dataset
+df_all = data.frame(
+  p1_choice = NA,
+  p2_choice = NA,
+  period = NA,
+  sim_id = NA)
+df_all = filter(df_all, is.na(p1_choice)==FALSE)
 
 # run the simulations
 for (s in 1:sim){
@@ -57,12 +66,15 @@ for (s in 1:sim){
   # normalize the frequency to probability
   joint_density[[s]] = round(joint_density[[s]]/sum(joint_density[[s]]), 3)
   
-  # create the dataset for figures
+  # create the dataset
   df = data.frame(
     p1_choice = history_p1,
     p2_choice = history_p2,
-    period = 1:n
+    period = 1:n,
+    sim_id = rep(s, n)
   )
+  
+  df_all = rbind(df_all, df)
   
   # # graph the decision making
   # title = paste('hm2000r', 'MV', 'sim', as.character(s), sep = '_')
@@ -86,9 +98,7 @@ for (s in 1:sim){
   # dev.off()
 }
 
-# # finalize the joint density matrix
-# xtable(joint_density[[1]])
-
+# calculate the joint distribution
 for (a in 1:sim){
   joint_density_all = joint_density_all + joint_density[[a]]
 }
