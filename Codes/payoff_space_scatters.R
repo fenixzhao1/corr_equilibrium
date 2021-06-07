@@ -124,12 +124,21 @@ ecdf_mvlc <- ecdf(df_co$d_target[df_co$treatment=="MV_L_C"])
 ecdf_mvha <- ecdf(df_co$d_target[df_co$treatment=="MV_H_A"])
 ecdf_mvhc <- ecdf(df_co$d_target[df_co$treatment=="MV_H_C"])
 
-
 ecdf_bmla <- ecdf(df_co$d_target[df_co$treatment=="BM_L_A"])
 ecdf_bmlc <- ecdf(df_co$d_target[df_co$treatment=="BM_L_C"])
 ecdf_bmha <- ecdf(df_co$d_target[df_co$treatment=="BM_H_A"])
 ecdf_bmhc <- ecdf(df_co$d_target[df_co$treatment=="BM_H_C"])
 
+
+ecdf_mvla_c <- ecdf(df_co$d_ce[df_co$treatment=="MV_L_A"])
+ecdf_mvlc_c <- ecdf(df_co$d_ce[df_co$treatment=="MV_L_C"])
+ecdf_mvha_c <- ecdf(df_co$d_ce[df_co$treatment=="MV_H_A"])
+ecdf_mvhc_c <- ecdf(df_co$d_ce[df_co$treatment=="MV_H_C"])
+
+ecdf_bmla_c <- ecdf(df_co$d_ce[df_co$treatment=="BM_L_A"])
+ecdf_bmlc_c <- ecdf(df_co$d_ce[df_co$treatment=="BM_L_C"])
+ecdf_bmha_c <- ecdf(df_co$d_ce[df_co$treatment=="BM_H_A"])
+ecdf_bmhc_c <- ecdf(df_co$d_ce[df_co$treatment=="BM_H_C"])
 
 png(here("Figures/cdf_mv_d_target.png"), width = 500, height = 500)
 plot(ecdf_mvla, verticals=TRUE, do.points=FALSE,main="MV game",xlab="distance to target CE",ylab = "CDF")
@@ -151,6 +160,25 @@ legend(10, .90, legend=c("LxA", "LxC","HxA","HxC"),
        col=c("black", "brown","orange","blue"), lty=1, cex=0.8,bty = "n")
 dev.off()
 
+png(here("Figures/cdf_mv_d_ce.png"), width = 500, height = 500)
+plot(ecdf_mvla_c, verticals=TRUE, do.points=FALSE,main="MV game",xlab="distance to CE space",ylab = "CDF")
+plot(ecdf_mvlc_c, verticals=TRUE, do.points=FALSE, add=TRUE, col='brown')
+plot(ecdf_mvha_c, verticals=TRUE, do.points=FALSE, add=TRUE, col='orange')
+plot(ecdf_mvhc_c, verticals=TRUE, do.points=FALSE, add=TRUE, col='blue')
+abline(h=.5,lty=3)
+legend(40, .20, legend=c("LxA", "LxC","HxA","HxC"),
+       col=c("black", "brown","orange","blue"), lty=1, cex=0.8,bty = "n")
+dev.off()
+
+png(here("Figures/cdf_bm_d_ce.png"), width = 500, height = 500)
+plot(ecdf_bmla_c, verticals=TRUE, do.points=FALSE,main="CH game",xlab="distance to CE space",ylab = "CDF")
+plot(ecdf_bmlc_c, verticals=TRUE, do.points=FALSE, add=TRUE, col='brown')
+plot(ecdf_bmha_c, verticals=TRUE, do.points=FALSE, add=TRUE, col='orange')
+plot(ecdf_bmhc_c, verticals=TRUE, do.points=FALSE, add=TRUE, col='blue')
+abline(h=.5,lty=3)
+legend(40, .20, legend=c("LxA", "LxC","HxA","HxC"),
+       col=c("black", "brown","orange","blue"), lty=1, cex=0.8,bty = "n")
+dev.off()
 
 
 

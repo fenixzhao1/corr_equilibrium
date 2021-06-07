@@ -8,7 +8,7 @@ library(haven)
 library(xtable)
 full_data = read.csv(here('Data','data_all.csv'))
 
-full_data <- filter(full_data, period > 20)
+#full_data <- filter(full_data, period > 20)
 
 #Create all possible cells
 full_data$bm1<-0
@@ -67,6 +67,8 @@ df <- full_data %>%
             mv9 = sum(mv9),
             numero = sum(numero)
             )
+
+df- filter(df, numero > 30)
 
 df$q0_1<-NA
 df$q0_2<-NA
@@ -133,6 +135,7 @@ df<- df %>%
 
 df$lr_test<- -2*(df$n_l-df$n_al)
 
+df$rejects<-0
 df$rejects[df$game=='BM']<- df$lr_test[df$game=='BM']>3.84
 df$rejects[df$game=='MV']<- df$lr_test[df$game=='MV']>9.49
 
