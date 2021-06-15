@@ -48,9 +48,10 @@ for (s in 1:sim){
   for (i in (experiment+1):n){
     #history_p1[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p1, history_p2)
     #history_p2[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p2, history_p1)
-    history_p1[i] = decision_avgpay_logit(mu, beta, i, history_p1, history_p2)
-    history_p2[i] = decision_avgpay_logit(mu, beta, i, history_p2, history_p1)
-    
+    #history_p1[i] = decision_avgpay_logit(mu, beta, i, history_p1, history_p2)
+    #history_p2[i] = decision_avgpay_logit(mu, beta, i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000(mu, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
