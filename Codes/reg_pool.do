@@ -16,13 +16,13 @@ encode cluster_id, gen (cluster_subject_id)
 gen round_player=session_code+player_code+string(round,"%02.0f")
 
 preserve
-keep if game == "BM" & regret==3 & information=="L"
+keep if game == "BM" 
 g regret_10 = (player_avgpay1 - player_avgpay0)
 gen negative_regret_1 = 0 
 replace negative_regret_1 = 1 if regret_10  < 0
 gen negative_regret_10= negative_regret_1 *regret_10
 
-keep round_player round player_code player_strategy period player_avgpay0 player_avgpay1 session_code cluster_subject_id regret_10 negative_regret_1
+keep game regret information round_player round player_code player_strategy period player_avgpay0 player_avgpay1 session_code cluster_subject_id regret_10 negative_regret_1
 save bml_lm.dta, replace
 restore
 
@@ -81,6 +81,13 @@ replace negative_regret_1 = 1 if regret_10  < 0
 
 gen negative_regret_10= negative_regret_1 *regret_10
 
+reg player_strategy1  regret_10 ///
+      if game == "BM" & regret==3 & information=="L", cluster(cluster_subject_id)
+
+reg player_strategy1  regret_10 ///
+      if game == "BM" & regret==2 & information=="L", cluster(cluster_subject_id)
+
+
 gen pay_last = player_payoff[_n-1]
 logit player_switch regret_new  ///
       if game == "BM" & regret==2 & information=="L", cluster(cluster_id)
@@ -115,9 +122,6 @@ test regret_10+negative_regret_10=0
 
 
 
-
-reg player_strategy1  regret_10 ///
-      if game == "BM" & regret==3 & information=="L", cluster(cluster_subject_id)
 
 
 	  
@@ -198,10 +202,6 @@ restore
 	  
 logit player_strategy1  regret_10 negative_regret_10 ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
-
-	  
-	  
-	  
 
 
 logit player_switch  regret_new    ///
@@ -344,5 +344,3 @@ reg player_switch_new avgpaydiff_std negative_avgpaydiff ///
 	MaxInfo MaxInfo_avgpaydiff MaxInfo_avgpaydiff_negative period if game == "MV" & regret==3, cluster(cluster_subject_id) 
 test avgpaydiff_std + negative_avgpaydiff = 0
 outreg2 using "~/Desktop/jotarepos/correq/corr_equilibrium/tables/stata_table", tex nonote se append nolabel bdec(3)
-
-
