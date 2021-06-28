@@ -1,7 +1,8 @@
 ***** Avgpay analysis panel data version *****
 * open dataset
 
-cd "~/Desktop/jotarepos/correq/corr_equilibrium/Data"
+*cd "~/Desktop/jotarepos/correq/corr_equilibrium/Data"
+cd "D:/Dropbox/Working Papers/Correlated Equilibrium/data/corr_equilibrium/Data"
 
 ***** logit model
 use "stata_pool.dta", clear
@@ -180,7 +181,7 @@ reg player_strategy1  regret_10 negative_regret_10 ///
 
 
 
-eg player_strategy1  player_avgpay1  player_avgpay0 ///
+reg player_strategy1  player_avgpay1  player_avgpay0 ///
       if game == "BM" & regret==3 & information=="L", cluster(cluster_id)
 	  	  	   	  
 

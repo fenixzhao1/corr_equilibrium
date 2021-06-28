@@ -306,7 +306,8 @@ for (i in 1:length(uniquetreatment)){
   df_list[[i]] = df_list[[i]] %>% mutate(player_avgpay2_standard = (player_avgpay2-mean2)/sd2)
 }
 
-df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]])
+df_new = rbind(df_list[[1]], df_list[[2]], df_list[[3]], df_list[[4]],
+               df_list[[5]], df_list[[6]], df_list[[7]], df_list[[8]])
 
 # add new group id
 df$cluster_id = paste(df$session_round_id, df$player_code)
