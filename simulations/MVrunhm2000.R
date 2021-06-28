@@ -5,7 +5,6 @@ library(ggplot2)
 library(xtable)
 library(dplyr)
 library(here)
-# setwd("~/Desktop/jotarepos/correq/corr_equilibrium/simulations/")
 source(here("simulations/MVregrets.R"))
 
 ##### Simulation pair level graph and joint density - HM2000 and avgpay #####
@@ -152,7 +151,7 @@ mean(df_sim$d_mne)
 mean(df_sim$d_tce)
 t.test(df_sim$d_mne, df_sim$d_tce, mu=0, paired = TRUE)$p.value
 
-rm(df, df_sim, joint_density, joint_density_all, history_p1, history_p2)
+#rm(df, df_sim, joint_density, joint_density_all, history_p1, history_p2)
 
 
 ##### Transition between cells #####

@@ -5,12 +5,12 @@ library(ggplot2)
 library(xtable)
 library(dplyr)
 library(here)
-# setwd("~/Desktop/jotarepos/correq/corr_equilibrium/simulations/")
+
 source(here("simulations/BMregrets.R"))
 
 ##### Pair level graph, joint density, and pair level table #####
 # set up the parameters for the simulation
-mu = 1500 # HM2000 probability parameter
+mu = 1800 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
@@ -119,5 +119,5 @@ mean(df_sim$d_mne)
 mean(df_sim$d_tce)
 t.test(df_sim$d_mne, df_sim$d_tce, mu=0, paired = TRUE)$p.value
 
-rm(df, df_sim, joint_density, joint_density_all, history_p1, history_p2)
+#rm(df, df_sim, joint_density, joint_density_all, history_p1, history_p2)
 

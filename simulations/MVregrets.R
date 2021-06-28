@@ -50,8 +50,8 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
     else{
       # switch with a positive probability from 1 to 2 or from 1 to 3
       seed = runif(1,0,1)
-      prob2 = (regret2-regret1)/mu
-      prob3 = (regret3-regret1)/mu
+      prob2 = max((regret2-regret1),0)/mu
+      prob3 = max((regret3-regret1),0)/mu
       if (seed <= prob2){return(2)}
       else if (seed <= prob2 + prob3){return(3)}
       else{return(1)}
@@ -64,8 +64,8 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
       seed = runif(1,0,1)
-      prob1 = (regret1-regret2)/mu
-      prob3 = (regret3-regret2)/mu
+      prob1 = max(regret1-regret2,0)/mu
+      prob3 = max(regret3-regret2,0)/mu
       if (seed <= prob1){return(1)}
       else if (seed <= prob1 + prob3){return(3)}
       else{return(2)}
@@ -78,8 +78,8 @@ decision_hm2000 = function(mu, iteration, my_history, your_history){
     else{
       # switch with a positive probability from 2 to 1 or from 2 to 3
       seed = runif(1,0,1)
-      prob1 = (regret1-regret3)/mu
-      prob2 = (regret2-regret3)/mu
+      prob1 = max(regret1-regret3,0)/mu
+      prob2 = max(regret2-regret3,0)/mu
       if (seed <= prob1){return(1)}
       else if (seed <= prob1 + prob2){return(2)}
       else{return(3)}
