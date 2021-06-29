@@ -14,7 +14,7 @@ mu = 1800 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = c(0.39,0.13)
+beta = c(0.39,0.15)
 Delta = 0.49
 pay_chicken = matrix(c(100,200,600,500),2,2) # payoff matrix 2x2
 
@@ -47,12 +47,14 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    #history_p1[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p1, history_p2)
-    #history_p2[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p2, history_p1)
+    history_p1[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p1, history_p2)
+    history_p2[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p2, history_p1)
+    #history_p1[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
+    #history_p2[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
     #history_p1[i] = decision_avgpay_logit(mu, beta, i, history_p1, history_p2)
     #history_p2[i] = decision_avgpay_logit(mu, beta, i, history_p2, history_p1)
-    history_p1[i] = decision_hm2000(mu, i, history_p1, history_p2)
-    history_p2[i] = decision_hm2000(mu, i, history_p2, history_p1)
+    #history_p1[i] = decision_hm2000(mu, i, history_p1, history_p2)
+    #history_p2[i] = decision_hm2000(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
@@ -120,4 +122,3 @@ mean(df_sim$d_tce)
 t.test(df_sim$d_mne, df_sim$d_tce, mu=0, paired = TRUE)$p.value
 
 #rm(df, df_sim, joint_density, joint_density_all, history_p1, history_p2)
-

@@ -13,8 +13,8 @@ mu = 1000 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = c(0.95,-0.14)
-Delta = 0.98
+beta = c(0.97,-0.18)
+Delta = 0.99
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 
 # set up the joint density matrix
@@ -47,6 +47,8 @@ for (s in 1:sim){
   for (i in (experiment+1):n){
     #history_p1[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p1, history_p2)
     #history_p2[i] = decision_avgpay_InertiaLogit_truncate(mu, beta, Delta, i, history_p2, history_p1)
+    #history_p1[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
+    #history_p2[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
     #history_p1[i] = decision_avgpay_logit(mu, beta, i, history_p1, history_p2)
     #history_p2[i] = decision_avgpay_logit(mu, beta, i, history_p2, history_p1)
     history_p1[i] = decision_hm2000(mu, i, history_p1, history_p2)
