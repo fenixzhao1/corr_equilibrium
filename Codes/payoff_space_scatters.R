@@ -33,7 +33,7 @@ df_co$tre=0
 
 df_co <- df_co %>% 
   mutate(tre=ifelse(sum(grep("MV", treatment)==1),1,tre))
-         
+
 df_co<- df_co %>% 
   mutate(in_ce = ifelse(tre==0 & p1_payoff/p2_payoff>=1 & abs((p2_payoff-200)/(p1_payoff-600))>=1/3 & abs((p2_payoff-200)/(p1_payoff-600))<=7/5,1,in_ce), in_ce = ifelse(tre==0 & p1_payoff/p2_payoff<1 & abs((p2_payoff-600)/(p1_payoff-200))>=5/7 & abs((p2_payoff-600)/(p1_payoff-200))<=3,1,in_ce))
 
@@ -98,7 +98,7 @@ df_co<- df_co %>%
          d_ce = ifelse(tre==1 & p1_payoff>100 & p2_payoff<=300-2*p1_payoff & in_ce==0,sqrt((100-p2_payoff)^2+(100-p1_payoff)^2),d_ce),
          d_ce = ifelse(tre==1 & p1_payoff>100 & p2_payoff>300-2*p1_payoff  & p2_payoff< -2*p1_payoff+1400/3 & in_ce==0,apply(cbind(eqm,eqm2), 1, FUN=min),d_ce),
          d_ce = ifelse(tre==1 & p1_payoff>100 & p2_payoff> -2*p1_payoff+1400/3 & in_ce==0,sqrt((400/3-p2_payoff)^2+(500/3-p1_payoff)^2),d_ce)
-         )
+  )
 
 df_co$d_target<-NA
 
@@ -109,8 +109,30 @@ tapply(df_co$d_ce,df_co$treatment,mean)
 tapply(df_co$d_ce,df_co$treatment,median)
 tapply(df_co$d_target,df_co$treatment,mean)
 
+df_co$d_mne<-NA
+df_co<- df_co %>% 
+  mutate(d_mne = ifelse(tre==0,sqrt((350-p2_payoff)^2+(350-p1_payoff)^2),sqrt((100-p2_payoff)^2+(100-p1_payoff)^2) ))
+
+tapply(df_co$d_mne,df_co$treatment,median)
+tapply(df_co$d_mne,df_co$treatment,mean)
+tapply(df_co$d_target,df_co$treatment,median)
+tapply(df_co$d_target,df_co$treatment,mean)
+
+wilcox.test(df_co$d_mne[df_co$treatment=="MV_L_A"],df_co$d_target[df_co$treatment=="MV_L_A"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="MV_H_A"],df_co$d_target[df_co$treatment=="MV_H_A"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="MV_L_C"],df_co$d_target[df_co$treatment=="MV_L_C"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="MV_H_C"],df_co$d_target[df_co$treatment=="MV_H_C"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="BM_H_A"],df_co$d_target[df_co$treatment=="BM_H_A"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="BM_L_A"],df_co$d_target[df_co$treatment=="BM_L_A"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="BM_H_C"],df_co$d_target[df_co$treatment=="BM_H_C"],paired = TRUE)
+wilcox.test(df_co$d_mne[df_co$treatment=="BM_L_C"],df_co$d_target[df_co$treatment=="BM_L_C"],paired = TRUE)
+
+############
+
 wilcox.test(df_co$d_target[df_co$treatment=="MV_L_A"],df_co$d_target[df_co$treatment=="MV_L_C"],paired = FALSE)
+
 wilcox.test(df_co$d_target[df_co$treatment=="MV_H_A"],df_co$d_target[df_co$treatment=="MV_H_C"],paired = FALSE)
+
 wilcox.test(df_co$d_target[df_co$treatment=="BM_H_A"],df_co$d_target[df_co$treatment=="BM_H_C"],paired = FALSE)
 wilcox.test(df_co$d_target[df_co$treatment=="BM_L_A"],df_co$d_target[df_co$treatment=="BM_L_C"],paired = FALSE)
 
@@ -259,7 +281,7 @@ for(tre in label_tre){
       annotate("point", x = 433, y = 433, colour = "blue") 
   }else{
     ggplot(data=data_tre ,aes(x=p1_payoff,y=p2_payoff)) + geom_point() + geom_count() +
-    geom_path(data=puntos_mv_matrix,aes(x=V1,y=V2),linetype = "dashed")+
+      geom_path(data=puntos_mv_matrix,aes(x=V1,y=V2),linetype = "dashed")+
       geom_path(data=puntos_mv,aes(x=V1,y=V2)) +
       geom_ribbon(data=puntos_shade_mv,aes(x=V1,y=V2,ymin=V2,ymax=V3), fill="blue", alpha=0.5) +
       geom_ribbon(data=puntos_shade_mv,aes(x=V1,y=V2,ymin=V2,ymax=V4), fill="blue", alpha=0.5) +
@@ -269,10 +291,9 @@ for(tre in label_tre){
       annotate("point", x = 100, y = 100, colour = "blue") +
       annotate(geom="text", x=160, y=155, label="Target CE") +
       annotate("point", x = 150, y = 150, colour = "blue",shape=10) 
-    }
+  }
   
   ggsave(here("Figures", pepito))
-  }
-
+}
 
 
