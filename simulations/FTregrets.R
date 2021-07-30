@@ -166,8 +166,8 @@ decision_hm2000r = function(mu, role, iteration, p1_history, p2_history, p3_hist
       else{
         # switch with a positive probability from 1 to 2 or from 1 to 3
         seed = runif(1,0,1)
-        prob2 = (regret2-regret1)/mu
-        prob3 = (regret3-regret1)/mu
+        prob2 = max((regret2-regret1)/mu,0)
+        prob3 = max((regret3-regret1)/mu,0)
         if (seed <= prob2){return(2)}
         else if (seed <= prob2 + prob3){return(3)}
         else{return(1)}
@@ -180,8 +180,8 @@ decision_hm2000r = function(mu, role, iteration, p1_history, p2_history, p3_hist
       else{
         # switch with a positive probability from 2 to 1 or from 2 to 3
         seed = runif(1,0,1)
-        prob1 = (regret1-regret2)/mu
-        prob3 = (regret3-regret2)/mu
+        prob1 = max((regret1-regret2)/mu,0)
+        prob3 = max((regret3-regret2)/mu,0)
         if (seed <= prob1){return(1)}
         else if (seed <= prob1 + prob3){return(3)}
         else{return(2)}
@@ -194,8 +194,8 @@ decision_hm2000r = function(mu, role, iteration, p1_history, p2_history, p3_hist
       else{
         # switch with a positive probability from 2 to 1 or from 2 to 3
         seed = runif(1,0,1)
-        prob1 = (regret1-regret3)/mu
-        prob2 = (regret2-regret3)/mu
+        prob1 = max((regret1-regret3)/mu,0)
+        prob2 = max((regret2-regret3)/mu,0)
         if (seed <= prob1){return(1)}
         else if (seed <= prob1 + prob2){return(2)}
         else{return(3)}
@@ -459,8 +459,8 @@ decision_avgpay = function(mu, role, iteration, p1_history, p2_history, p3_histo
       else{
         # switch with a positive probability from 1 to 2 or from 1 to 3
         seed = runif(1,0,1)
-        prob2 = (regret2-regret1)/mu
-        prob3 = (regret3-regret1)/mu
+        prob2 = max((regret2-regret1)/mu,0)
+        prob3 = max((regret3-regret1)/mu,0)
         if (seed <= prob2){return(2)}
         else if (seed <= prob2 + prob3){return(3)}
         else{return(1)}
@@ -473,8 +473,8 @@ decision_avgpay = function(mu, role, iteration, p1_history, p2_history, p3_histo
       else{
         # switch with a positive probability from 2 to 1 or from 2 to 3
         seed = runif(1,0,1)
-        prob1 = (regret1-regret2)/mu
-        prob3 = (regret3-regret2)/mu
+        prob1 = max((regret1-regret2)/mu,0)
+        prob3 = max((regret3-regret2)/mu,0)
         if (seed <= prob1){return(1)}
         else if (seed <= prob1 + prob3){return(3)}
         else{return(2)}
@@ -487,8 +487,8 @@ decision_avgpay = function(mu, role, iteration, p1_history, p2_history, p3_histo
       else{
         # switch with a positive probability from 2 to 1 or from 2 to 3
         seed = runif(1,0,1)
-        prob1 = (regret1-regret3)/mu
-        prob2 = (regret2-regret3)/mu
+        prob1 = max((regret1-regret3)/mu,0)
+        prob2 = max((regret2-regret3)/mu,0)
         if (seed <= prob1){return(1)}
         else if (seed <= prob1 + prob2){return(2)}
         else{return(3)}
@@ -620,7 +620,7 @@ mu = 1500 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = 0.1
+beta = 0.5
 
 # set up the joint density matrix
 joint_density_all = matrix(0,2,6)
@@ -646,9 +646,9 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r(mu, 1, i, history_p1, history_p2, history_p3)
-    history_p2[i] = decision_hm2000r(mu, 2, i, history_p1, history_p2, history_p3)
-    history_p3[i] = decision_hm2000r(mu, 3, i, history_p1, history_p2, history_p3)
+    history_p1[i] = decision_avgpay_logit(mu, 1, beta, i, history_p1, history_p2, history_p3)
+    history_p2[i] = decision_avgpay_logit(mu, 2, beta, i, history_p1, history_p2, history_p3)
+    history_p3[i] = decision_avgpay_logit(mu, 3, beta, i, history_p1, history_p2, history_p3)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1 & history_p3[i]==1)

@@ -1,11 +1,11 @@
 ##### MV regret funtions #####
 # payoff function
-pay1<-matrix(c(300,0,200,
-               200,300,0,
-               0,200,300),3,3)
-pay2<-matrix(c(200,300,0,
-               0,200,300,
-               300,0,200),3,3)
+pay1<-matrix(c(0,500,700,
+               200,300,200,
+               700,500,0),3,3)
+pay2<-matrix(c(700,200,0,
+               500,300,500,
+               0,200,700),3,3)
 
 
 payoff = function(role, p1_choice, p2_choice){
@@ -313,7 +313,7 @@ decision_avgpay_logit = function(mu, role, beta, iteration, p1_history, p2_histo
 
 
 ##### Joint distribution #####
-mu = 1500 # HM2000 probability parameter
+mu = 3000 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
@@ -341,7 +341,7 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    
+
     history_p1[i] = decision_hm2000r_logit(mu, 1, beta, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000r_logit(mu, 2, beta, i, history_p1, history_p2)
     

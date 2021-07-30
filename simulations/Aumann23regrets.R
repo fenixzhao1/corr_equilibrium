@@ -545,7 +545,7 @@ mu = 2000 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-beta = 0.01
+beta = 0.5
 
 # set up the joint density matrix
 joint_density_all = matrix(0,2,4)
@@ -571,9 +571,9 @@ for (s in 1:sim){
   
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
-    history_p1[i] = decision_hm2000r(mu, 1, i, history_p1, history_p2, history_p3)
-    history_p2[i] = decision_hm2000r(mu, 2, i, history_p1, history_p2, history_p3)
-    history_p3[i] = decision_hm2000r(mu, 3, i, history_p1, history_p2, history_p3)
+    history_p1[i] = decision_avgpay_logit(mu, 1, beta, i, history_p1, history_p2, history_p3)
+    history_p2[i] = decision_avgpay_logit(mu, 2, beta, i, history_p1, history_p2, history_p3)
+    history_p3[i] = decision_avgpay_logit(mu, 3, beta, i, history_p1, history_p2, history_p3)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1 & history_p3[i]==1)
