@@ -9,7 +9,7 @@ source(here("simulations/MVregrets.R"))
 
 ##### Simulation pair level graph and joint density - HM2000 and avgpay #####
 # set up the parameters for the simulation
-mu = 1000 # HM2000 probability parameter
+mu = 436 # HM2000 probability parameter
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
@@ -51,8 +51,8 @@ for (s in 1:sim){
     #history_p2[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
     #history_p1[i] = decision_avgpay_logit(mu, beta, i, history_p1, history_p2)
     #history_p2[i] = decision_avgpay_logit(mu, beta, i, history_p2, history_p1)
-    history_p1[i] = decision_avgpay(mu, i, history_p1, history_p2)
-    history_p2[i] = decision_avgpay(mu, i, history_p2, history_p1)
+    history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
+    history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
     
     # update the joint density matrix
     if (history_p1[i]==1 & history_p2[i]==1){joint_density[[s]][1,1]=joint_density[[s]][1,1]+1}
