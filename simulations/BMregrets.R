@@ -692,6 +692,7 @@ decision_hm2000r_InertiaLogit_truncate = function(mu, b, Delta, iteration, my_hi
 
 
 ##### HM2001 #####
+# hm2001 version regret
 regret_hm2001 = function(m, iteration, my_history, your_history, my_prob){
   
   # calculate the length of history
@@ -715,7 +716,7 @@ regret_hm2001 = function(m, iteration, my_history, your_history, my_prob){
   }  
 }
 
-##### HM2001 second version #####
+# another regret
 regret_hm2001_new = function(m, iteration, my_history, your_history, my_prob){
   
   # calculate the length of history
@@ -738,8 +739,6 @@ regret_hm2001_new = function(m, iteration, my_history, your_history, my_prob){
     return(my_regret/len_history)
   }  
 }
-
-
 
 # build the regret avgpay function
 regret_avgpayr = function(m, iteration, my_history, your_history){
@@ -765,7 +764,6 @@ regret_avgpayr = function(m, iteration, my_history, your_history){
     return(my_regret/len_history)
   }
 }
-
 
 # build the decision function based on HM2001
 decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history, my_prob){
@@ -795,8 +793,6 @@ decision_hm2001 = function(mu, delta, gamma, iteration, my_history, your_history
     else{return(c(2,psw))}
   }
 }    
-
-
 
 # build the decision function based on HM2001
 decision_logit_hm2001 = function(beta, iteration, my_history, your_history, my_prob){

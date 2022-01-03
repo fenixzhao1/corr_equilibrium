@@ -421,9 +421,9 @@ decision_avgpay_logit = function(mu, beta, iteration, my_history, your_history){
   
   # randomly determine the decision
   seed = runif(1,0,1)
-  if (seed <= prob[1]){return(c(1, prob[1], prob[2], prob[3]))}
-  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(c(2, prob[1], prob[2], prob[3]))}
-  else{return(c(3, prob[1], prob[2], prob[3]))}
+  if (seed <= prob[1]){return(1)}
+  else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(2)}
+  else{return(3)}
 }
 
 # decision under hist-avg logit response spec 2
