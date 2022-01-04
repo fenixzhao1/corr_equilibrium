@@ -12,7 +12,8 @@ pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-mu = 2000 # HM response parameter
+start = 400 # number of periods when the data start counting
+mu = 1000 # HM response parameter
 beta = 1 # logit response parameter
 Delta = 0.5 # inertia logit parameter
 
@@ -39,29 +40,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
 
     history_p1[i] = decision_hm2000(mu, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000(mu, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -95,6 +79,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -136,7 +123,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### counterfactual regret - HM response #####
@@ -157,29 +144,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_hm2000r(mu, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000r(mu, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -213,6 +183,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -254,7 +227,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### average regret - HM response #####
@@ -275,29 +248,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_avgpay(mu, i, history_p1, history_p2)
     history_p2[i] = decision_avgpay(mu, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -331,6 +287,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -372,7 +331,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### signed regret - logit response #####
@@ -393,29 +352,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_hm2000_logitR(mu, beta, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000_logitR(mu, beta, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -449,6 +391,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -490,7 +435,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### counterfactual regret - logit response #####
@@ -511,29 +456,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_hm2000r_logitR(mu, beta, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000r_logitR(mu, beta, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -567,6 +495,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -608,7 +539,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### average regret - logit response #####
@@ -629,29 +560,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_avgpay_logitR(mu, beta, i, history_p1, history_p2)
     history_p2[i] = decision_avgpay_logitR(mu, beta, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -685,6 +599,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -726,7 +643,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### signed regret - inertia logit response #####
@@ -747,29 +664,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_hm2000_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -803,6 +703,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -844,7 +747,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### counterfactual regret - inertia logit response #####
@@ -865,29 +768,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
     history_p2[i] = decision_hm2000r_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -921,6 +807,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -962,7 +851,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### average regret - inertia logit response #####
@@ -983,29 +872,12 @@ for (s in 1:sim){
   history_p1[1:experiment] = sample(1:3, experiment, replace = TRUE)
   history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
   
-  # set up the joint density matrix for the current simulation
-  joint_density = matrix(c(0,0,0,0,0,0,0,0,0),3,3)
-  
   # calculate the rest of the decisions to n periods
   for (i in (experiment+1):n){
     
     history_p1[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p1, history_p2)
     history_p2[i] = decision_avgpay_InertiaLogit(mu, beta, Delta, i, history_p2, history_p1)
-    
-    # update the joint density matrix
-    if (history_p1[i]==1 & history_p2[i]==1){joint_density[1,1]=joint_density[1,1]+1}
-    else if (history_p1[i]==1 & history_p2[i]==2){joint_density[1,2]=joint_density[1,2]+1}
-    else if (history_p1[i]==1 & history_p2[i]==3){joint_density[1,3]=joint_density[1,3]+1}
-    else if (history_p1[i]==2 & history_p2[i]==1){joint_density[2,1]=joint_density[2,1]+1}
-    else if (history_p1[i]==2 & history_p2[i]==2){joint_density[2,2]=joint_density[2,2]+1}
-    else if (history_p1[i]==2 & history_p2[i]==3){joint_density[2,3]=joint_density[2,3]+1}
-    else if (history_p1[i]==3 & history_p2[i]==1){joint_density[3,1]=joint_density[3,1]+1}
-    else if (history_p1[i]==3 & history_p2[i]==2){joint_density[3,2]=joint_density[3,2]+1}
-    else{joint_density[3,3]=joint_density[3,3]+1}
   }
-  
-  # normalize the frequency to probability
-  joint_density = round(joint_density/sum(joint_density), 3)
   
   # create the dataset for this simulation
   dfsim = data.frame(
@@ -1039,6 +911,9 @@ for (s in 1:sim){
   
   # add the choice dataset to the main dataset
   df = rbind(df, dfsim)
+  
+  # for joint density data, only use the last 100 periods.
+  dfsim = filter(dfsim, period > start)
   
   # record the joint density row s
   dfsim_jd$sim[s] = s
@@ -1080,7 +955,7 @@ dfsim_jd = dfsim_jd %>%
 df_jd = rbind(df_jd, dfsim_jd)
 
 # remove temporary values
-rm(dfsim, dfsim_jd, joint_density)
+rm(dfsim, dfsim_jd)
 
 
 ##### Data Output #####
