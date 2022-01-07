@@ -9,13 +9,13 @@ source(here("simulations/MVregrets.R"))
 
 # set up the parameters for the simulation
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
-n = 500 # number of periods in each simulation
+n = 1000 # number of periods in each simulation
 sim = 500 # number of simulations
 experiment = 100 # number of experimentation periods where players randomly make decisions
-start = 400 # number of periods when the data start counting
-mu = 1000 # HM response parameter
-beta = 1 # logit response parameter
-Delta = 0.5 # inertia logit parameter
+start = 500 # number of periods when the data start counting
+mu = 600 # HM response parameter
+beta = 2 # logit response parameter
+Delta = 0.8 # inertia logit parameter
 
 # set up the aggregate dataset
 df = data.frame()
