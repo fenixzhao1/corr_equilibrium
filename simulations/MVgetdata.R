@@ -9,12 +9,12 @@ source(here("simulations/MVregrets.R"))
 
 # set up the parameters for the simulation
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
-n = 1000 # number of periods in each simulation
+n = 500 # number of periods in each simulation
 sim = 500 # number of simulations
-experiment = 100 # number of experimentation periods where players randomly make decisions
-start = 500 # number of periods when the data start counting
+experiment = 50 # number of experimentation periods where players randomly make decisions
+start = 50 # number of periods when the data start counting
 mu = 600 # HM response parameter
-beta = 2 # logit response parameter
+beta = 1 # logit response parameter
 Delta = 0.8 # inertia logit parameter
 
 # set up the aggregate dataset
@@ -55,8 +55,8 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'SignedRegret',
-    response = 'HMResponse',
+    regret = 'UC',
+    response = 'HM',
     mu = mu,
     beta = beta,
     Delta = Delta
@@ -100,8 +100,8 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'SignedRegret',
-  response = 'HMResponse',
+  regret = 'UC',
+  response = 'HM',
   mu = mu,
   beta = beta,
   Delta = Delta
@@ -159,8 +159,8 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'CounterfactualRegret',
-    response = 'HMResponse',
+    regret = 'C',
+    response = 'HM',
     mu = mu,
     beta = beta,
     Delta = Delta
@@ -204,8 +204,8 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'CounterfactualRegret',
-  response = 'HMResponse',
+  regret = 'C',
+  response = 'HM',
   mu = mu,
   beta = beta,
   Delta = Delta
@@ -263,8 +263,8 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'AverageRegret',
-    response = 'HMResponse',
+    regret = 'A',
+    response = 'HM',
     mu = mu,
     beta = beta,
     Delta = Delta
@@ -308,8 +308,8 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'AverageRegret',
-  response = 'HMResponse',
+  regret = 'A',
+  response = 'HM',
   mu = mu,
   beta = beta,
   Delta = Delta
@@ -367,8 +367,8 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'SignedRegret',
-    response = 'LogitResponse',
+    regret = 'UC',
+    response = 'Logit',
     mu = mu,
     beta = beta,
     Delta = Delta
@@ -412,8 +412,8 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'SignedRegret',
-  response = 'LogitResponse',
+  regret = 'UC',
+  response = 'Logit',
   mu = mu,
   beta = beta,
   Delta = Delta
@@ -471,8 +471,8 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'CounterfactualRegret',
-    response = 'LogitResponse',
+    regret = 'C',
+    response = 'Logit',
     mu = mu,
     beta = beta,
     Delta = Delta
@@ -516,8 +516,8 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'CounterfactualRegret',
-  response = 'LogitResponse',
+  regret = 'C',
+  response = 'Logit',
   mu = mu,
   beta = beta,
   Delta = Delta
@@ -575,8 +575,8 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'AverageRegret',
-    response = 'LogitResponse',
+    regret = 'A',
+    response = 'Logit',
     mu = mu,
     beta = beta,
     Delta = Delta
@@ -620,8 +620,8 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'AverageRegret',
-  response = 'LogitResponse',
+  regret = 'A',
+  response = 'Logit',
   mu = mu,
   beta = beta,
   Delta = Delta
@@ -679,7 +679,7 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'SignedRegret',
+    regret = 'UC',
     response = 'InertiaLogit',
     mu = mu,
     beta = beta,
@@ -724,7 +724,7 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'SignedRegret',
+  regret = 'UC',
   response = 'InertiaLogit',
   mu = mu,
   beta = beta,
@@ -783,7 +783,7 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'CounterfactualRegret',
+    regret = 'C',
     response = 'InertiaLogit',
     mu = mu,
     beta = beta,
@@ -828,7 +828,7 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'CounterfactualRegret',
+  regret = 'C',
   response = 'InertiaLogit',
   mu = mu,
   beta = beta,
@@ -887,7 +887,7 @@ for (s in 1:sim){
   )
   dfsim = dfsim %>% mutate(
     sim = s,
-    regret = 'AverageRegret',
+    regret = 'A',
     response = 'InertiaLogit',
     mu = mu,
     beta = beta,
@@ -932,7 +932,7 @@ for (s in 1:sim){
 
 # add the simulation characteristics to the joint density dataset
 dfsim_jd = dfsim_jd %>% mutate(
-  regret = 'AverageRegret',
+  regret = 'A',
   response = 'InertiaLogit',
   mu = mu,
   beta = beta,
