@@ -1,5 +1,8 @@
 ##### CDF of S2 (the sum of the probability density of the most two frequently-played cells) #####
-dfmv<-read.csv(here("Data/sim_pair_mv.csv"), header=T, stringsAsFactors = FALSE)
+# add packages
+library(here)
+library(ggplot2)
+dfmv<-read.csv(here("Data/sim_pair100_mv.csv"), header=T, stringsAsFactors = FALSE)
 
 # draw cdf
 for (i in 1:length(dfmv$sim)){
@@ -13,8 +16,9 @@ for (i in 1:length(dfmv$sim)){
 # plot cdf of s2
 png(here("Figures/sim_s2_cdf.png"), width = 500, height = 300)
 ggplot(data=dfmv) +
-  geom_density(aes(x=s2, color=regret, linetype=response)) +
-  scale_y_continuous(name='density', waiver(), limits=c(0,100)) +
+  stat_ecdf(geom='step', aes(x=s2, colour=regret, linetype=response)) +
+  #geom_density(aes(x=s2, color=regret, linetype=response)) +
+  scale_y_continuous(name='CDF', waiver(), limits=c(0,1)) +
   scale_x_continuous(name='the sum of the probability density of the most two frequently-played cells') +
   scale_colour_manual(values=c('blue', 'red', 'green')) +
   scale_linetype_manual(values=c(1,2,3))
@@ -84,16 +88,16 @@ regret_avgpay = function(m, iteration, my_history, your_history){
   }
 }
 
-# decision under HM2000 revised
+# decision under HM response
 decision_hm2000r = function(mu, iteration, my_history, your_history){
   
   # get my most recent decision
   lastchoice = my_history[iteration-1]
   
   # compute regret for all possible decisions
-  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
-  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
-  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
+  regret1 = regret_avgpay(1, iteration, my_history, your_history)
+  regret2 = regret_avgpay(2, iteration, my_history, your_history)
+  regret3 = regret_avgpay(3, iteration, my_history, your_history)
   
   # calculate the decision when my last choice is 1
   if (lastchoice == 1){
@@ -138,6 +142,66 @@ decision_hm2000r = function(mu, iteration, my_history, your_history){
   }
 }
 
+# decision under logit response
+decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history){
+  
+  # get my most recent decision
+  lastchoice = my_history[iteration-1]
+  
+  # compute regret for all possible decisions
+  regret1 = regret_avgpay(1, iteration, my_history, your_history)
+  regret2 = regret_avgpay(2, iteration, my_history, your_history)
+  regret3 = regret_avgpay(3, iteration, my_history, your_history)
+  
+  # calculate the decision when my last choice is 1
+  if (lastchoice == 1){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[2] = exp(beta*(regret2-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+    prob[3] = exp(beta*(regret3-regret1))/(exp(beta*(regret1-regret1)) + exp(beta*(regret2-regret1)) + exp(beta*(regret3-regret1)))
+  
+    # randomly determine the decision
+    seed = runif(1,0,1)
+    if (seed <= prob[1]){return(c(1,max(regret2-regret1,regret3-regret1),min(regret2-regret1,regret3-regret1)))}
+    else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(c(2,max(regret2-regret1,regret3-regret1),min(regret2-regret1,regret3-regret1)))}
+    else{return(c(3,max(regret2-regret1,regret3-regret1),min(regret2-regret1,regret3-regret1)))}
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 2){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[2] = exp(beta*(regret2-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+    prob[3] = exp(beta*(regret3-regret2))/(exp(beta*(regret1-regret2)) + exp(beta*(regret2-regret2)) + exp(beta*(regret3-regret2)))
+  
+    # randomly determine the decision
+    seed = runif(1,0,1)
+    if (seed <= prob[1]){return(c(1,max(regret1-regret2,regret3-regret2),min(regret1-regret2,regret3-regret2)))}
+    else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(c(2,max(regret1-regret2,regret3-regret2),min(regret1-regret2,regret3-regret2)))}
+    else{return(c(3,max(regret1-regret2,regret3-regret2),min(regret1-regret2,regret3-regret2)))}
+  }
+  
+  # calculate the decision when my last choice is 2
+  if (lastchoice == 3){
+    
+    # using logit response to calculate the probability of choosing each strategy
+    prob = c(0,0,0)
+    prob[1] = exp(beta*(regret1-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[2] = exp(beta*(regret2-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+    prob[3] = exp(beta*(regret3-regret3))/(exp(beta*(regret1-regret3)) + exp(beta*(regret2-regret3)) + exp(beta*(regret3-regret3)))
+  
+    # randomly determine the decision
+    seed = runif(1,0,1)
+    if (seed <= prob[1]){return(c(1,max(regret1-regret3,regret2-regret3),min(regret1-regret3,regret2-regret3)))}
+    else if (seed > prob[1] & seed <= prob[1]+prob[2]){return(c(2,max(regret1-regret3,regret2-regret3),min(regret1-regret3,regret2-regret3)))}
+    else{return(c(3,max(regret1-regret3,regret2-regret3),min(regret1-regret3,regret2-regret3)))}
+  }
+}
+
 # set up the parameters for the simulation
 pay_MV = matrix(c(0,200,100,100,0,200,200,100,0),3,3) # payoff matrix 3x3
 n = 20000 # number of periods in each simulation
@@ -160,12 +224,12 @@ history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
 
 # calculate the rest of the decisions to n periods
 for (j in (experiment+1):n){
-  history_p1[j] = decision_hm2000r(mu, j, history_p1, history_p2)[1]
-  history_p2[j] = decision_hm2000r(mu, j, history_p2, history_p1)[1]
-  regretmax_p1[j] = decision_hm2000r(mu, j, history_p1, history_p2)[2]
-  regretmax_p2[j] = decision_hm2000r(mu, j, history_p2, history_p1)[2]
-  regretmin_p1[j] = decision_hm2000r(mu, j, history_p1, history_p2)[3]
-  regretmin_p2[j] = decision_hm2000r(mu, j, history_p2, history_p1)[3]
+  history_p1[j] = decision_hm2000r_logitR(mu, beta, j, history_p1, history_p2)[1]
+  history_p2[j] = decision_hm2000r_logitR(mu, beta, j, history_p2, history_p1)[1]
+  regretmax_p1[j] = decision_hm2000r_logitR(mu, beta, j, history_p1, history_p2)[2]
+  regretmax_p2[j] = decision_hm2000r_logitR(mu, beta, j, history_p2, history_p1)[2]
+  regretmin_p1[j] = decision_hm2000r_logitR(mu, beta, j, history_p1, history_p2)[3]
+  regretmin_p2[j] = decision_hm2000r_logitR(mu, beta, j, history_p2, history_p1)[3]
   
   if (j%%1000==0){print(j)}
 }
@@ -222,31 +286,32 @@ dfsim = dfsim %>% mutate(
 # jd[3,3] = round(mean(df$is_33),3)
 # print(jd)
 
-# plot regret
-png(here("Figures/sim_MVlong_action.png"), width = 600, height = 400)
+# plot action
+png(here("Figures/sim_MVlongavg_logit_action.png"), width = 800, height = 400)
 ggplot(data=dfsim) +
-  geom_line(aes(x=period,y=p1_choice), colour='blue') +
-  geom_line(aes(x=period,y=p2_choice), colour='red') +
-  scale_y_continuous(name='choice', waiver(), limits=c(1,3), breaks = c(1,2,3)) +
-  scale_x_continuous(name='periods', waiver(), limits=c(0,20000), breaks = c(100,5000,10000,15000,20000)) +
+  geom_line(aes(x=period,y=p1_choice, colour='blue')) +
+  geom_line(aes(x=period,y=p2_choice, colour='red')) +
+  scale_y_continuous(name='choice', waiver(), limits=c(1,3), breaks = c(1,2,3),
+                     labels = c('T/L','M/C','B/R')) +
+  scale_x_continuous(name='periods', waiver(), limits=c(0,20000), breaks = c(100,1000,5000,10000,20000)) +
   scale_colour_manual(values=c('blue', 'red'), labels=c('row player', 'column player'))
 dev.off()
 
 # plot regret
-png(here("Figures/sim_MVlong_regret.png"), width = 600, height = 400)
+png(here("Figures/sim_MVlongavg_logit_regret.png"), width = 800, height = 400)
 ggplot(data=dfsim) +
-  geom_line(aes(x=period,y=p1_regretmax), colour='blue') +
-  #geom_line(aes(x=period,y=p1_regretmin), colour='blue') +
-  geom_line(aes(x=period,y=p2_regretmax), colour='red') +
-  #geom_line(aes(x=period,y=p2_regretmin), colour='red') +
+  geom_line(aes(x=period,y=p1_regretmax, colour='blue')) +
+  #geom_line(aes(x=period,y=p1_regretmin, colour='blue')) +
+  geom_line(aes(x=period,y=p2_regretmax, colour='red')) +
+  #geom_line(aes(x=period,y=p2_regretmin, colour='red')) +
   scale_y_continuous(name='regret', waiver(), limits=c(-120,120), breaks = c(-100,0,100)) +
-  scale_x_continuous(name='periods', waiver(), limits=c(0,20000), breaks = c(100,5000,10000,15000,20000)) +
+  scale_x_continuous(name='periods', waiver(), limits=c(0,20000), breaks = c(100,1000,5000,10000,20000)) +
   scale_colour_manual(values=c('blue', 'red'), labels=c('row player', 'column player'))
 dev.off()
 
-# export data
-dfsim = dfsim %>% mutate(
-  regret = 'C',
-  response = 'HM'
-)
-write.csv(dfsim, here("Data", "sim_mvlong_c.csv"))
+# # export data
+# dfsim = dfsim %>% mutate(
+#   regret = 'C',
+#   response = 'HM'
+# )
+# write.csv(dfsim, here("Data", "sim_mvlong_c.csv"))

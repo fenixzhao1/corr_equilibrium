@@ -7,10 +7,12 @@ library(dplyr)
 library(here)
 
 # import pair dataset
-dfch<-read.csv(here("Data/sim_pair_ch.csv"), header=T, stringsAsFactors = FALSE)
+#dfch<-read.csv(here("Data/sim_pair_ch.csv"), header=T, stringsAsFactors = FALSE)
+dfch<-read.csv(here("Data/sim_pair100_ch.csv"), header=T, stringsAsFactors = FALSE)
 dfch$treatment = paste(dfch$regret, dfch$response, sep = ' ')
 
-dfmv<-read.csv(here("Data/sim_pair_mv.csv"), header=T, stringsAsFactors = FALSE)
+#dfmv<-read.csv(here("Data/sim_pair_mv.csv"), header=T, stringsAsFactors = FALSE)
+dfmv<-read.csv(here("Data/sim_pair100_mv.csv"), header=T, stringsAsFactors = FALSE)
 dfmv$treatment = paste(dfmv$regret, dfmv$response, sep = ' ')
 
 # set up treatment list
