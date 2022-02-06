@@ -8,12 +8,75 @@ library(xtable)
 library(haven)
 
 full_data = read.csv(here('Data','data_all.csv'))
+df = filter(full_data, period > 20 & game == 'MV')
+df = df %>% mutate(
+  is_00 = ifelse(p1_strategy==0&p2_strategy==0, 1, 0),
+  is_01 = ifelse(p1_strategy==0&p2_strategy==1, 1, 0),
+  is_02 = ifelse(p1_strategy==0&p2_strategy==2, 1, 0),
+  is_10 = ifelse(p1_strategy==1&p2_strategy==0, 1, 0),
+  is_11 = ifelse(p1_strategy==1&p2_strategy==1, 1, 0),
+  is_12 = ifelse(p1_strategy==1&p2_strategy==2, 1, 0),
+  is_20 = ifelse(p1_strategy==2&p2_strategy==0, 1, 0),
+  is_21 = ifelse(p1_strategy==2&p2_strategy==1, 1, 0),
+  is_22 = ifelse(p1_strategy==2&p2_strategy==2, 1, 0)
+)
+
+df_co <- df %>%
+  group_by(session_round_pair_id, treatment)  %>%
+  summarize(jd_00 = mean(is_00),
+            jd_01 = mean(is_01),
+            jd_02 = mean(is_02),
+            jd_10 = mean(is_10),
+            jd_11 = mean(is_11),
+            jd_12 = mean(is_12),
+            jd_20 = mean(is_20),
+            jd_21 = mean(is_21),
+            jd_22 = mean(is_22),
+            s2 = 0
+)
+
+
+##### S2 CDF #####
+# calculate S2
+for (i in 1:length(df_co$session_round_pair_id)){
+  jd = c(df_co$jd_01[i], df_co$jd_02[i],
+         df_co$jd_10[i], df_co$jd_12[i],
+         df_co$jd_20[i], df_co$jd_21[i])
+  first = max(jd)
+  second = max(jd[-which.max(jd)])
+  df_co$s2[i] = first+second
+}
+
+# plot cdf of s2
+png(here("Figures/data_s2_cdf.png"), width = 500, height = 300)
+ggplot(data=df_co) +
+  stat_ecdf(geom='step', aes(x=s2, colour=treatment)) +
+  #geom_density(aes(x=s2, color=regret, linetype=response)) +
+  scale_y_continuous(name='CDF', waiver(), limits=c(0,1)) +
+  scale_x_continuous(name='the sum of the probability density of the most two frequently-played cells') +
+  scale_colour_manual(values=c("orange","blue","black", "brown"))
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ##### Transition probability matrix #####
 # leave only MV data
 mv_data = filter(full_data, game=='MV')
-mv_data = filter(mv_data, period > 20)
 
 # set up matrix
 uniquetreatment = unique(mv_data$treatment)
@@ -33,7 +96,7 @@ for (i in 1:length(uniquetreatment)){
     # generate the empty matrix
     transition = matrix(0, nrow = 2, ncol = 6)
     rownames(transition) = c('diagonal at t', 'off-diagonal at t')
-    colnames(transition) = c('stay at t+1', 'BR at t+1', 'BR*2 at t+1', 'other at t+1', 'other*2 at t+1', 'obs')
+    colnames(transition) = c('stay at t+1', 'BR at t+1', 'BR*2 at t+1', 'other 1 step', 'one 2 steps', 'obs')
     
     # loop over pairs
     for (j in 1:length(pairs)){

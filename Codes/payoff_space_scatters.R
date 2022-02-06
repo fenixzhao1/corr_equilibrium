@@ -23,6 +23,8 @@ df_co <- df %>%
             p1_payoff  = mean(p1_payoff),
             p2_payoff  = mean(p2_payoff))
 
+
+##### Distance to CE and CDF #####
 ne_pure1<-c(2,6)
 ne_pure2<-c(6,2)
 best_ce<-c(13/3,13/3)
@@ -127,19 +129,15 @@ wilcox.test(df_co$d_mne[df_co$treatment=="BM_L_A"],df_co$d_target[df_co$treatmen
 wilcox.test(df_co$d_mne[df_co$treatment=="BM_H_C"],df_co$d_target[df_co$treatment=="BM_H_C"],paired = TRUE)
 wilcox.test(df_co$d_mne[df_co$treatment=="BM_L_C"],df_co$d_target[df_co$treatment=="BM_L_C"],paired = TRUE)
 
-############
-
 wilcox.test(df_co$d_target[df_co$treatment=="MV_L_A"],df_co$d_target[df_co$treatment=="MV_L_C"],paired = FALSE)
-
 wilcox.test(df_co$d_target[df_co$treatment=="MV_H_A"],df_co$d_target[df_co$treatment=="MV_H_C"],paired = FALSE)
-
 wilcox.test(df_co$d_target[df_co$treatment=="BM_H_A"],df_co$d_target[df_co$treatment=="BM_H_C"],paired = FALSE)
 wilcox.test(df_co$d_target[df_co$treatment=="BM_L_A"],df_co$d_target[df_co$treatment=="BM_L_C"],paired = FALSE)
-
 wilcox.test(df_co$d_target[df_co$treatment=="MV_H_A"],df_co$d_target[df_co$treatment=="MV_L_A"],paired = FALSE)
 wilcox.test(df_co$d_target[df_co$treatment=="MV_H_C"],df_co$d_target[df_co$treatment=="MV_L_C"],paired = FALSE)
 wilcox.test(df_co$d_target[df_co$treatment=="BM_H_A"],df_co$d_target[df_co$treatment=="BM_L_A"],paired = FALSE)
 wilcox.test(df_co$d_target[df_co$treatment=="BM_H_C"],df_co$d_target[df_co$treatment=="BM_L_C"],paired = FALSE)
+
 
 ecdf_mvla <- ecdf(df_co$d_target[df_co$treatment=="MV_L_A"])
 ecdf_mvlc <- ecdf(df_co$d_target[df_co$treatment=="MV_L_C"])
@@ -203,10 +201,10 @@ legend(40, .20, legend=c("LxA", "LxC","HxA","HxC"),
 dev.off()
 
 
-
 #df_co$in_ce[df_co$treatment=='BM_L_C']<-sqrt((df_co$p1_payoff[df_co$treatment=='BM_L_C']-best_ce[1]*100)^2+(df_co$p1_payoff[df_co$treatment=='BM_L_C']-best_ce[2]*100)^2)
 
 
+##### Payoff vectors figures #####
 puntos_bm<-as.data.frame(rbind(worst_ce,ne_pure1,best_ce,ne_pure2,worst_ce)*100)
 puntos_bm_matrix<-as.data.frame(rbind(c(1,1),ne_pure1,c(5,5),ne_pure2,c(1,1))*100)
 
