@@ -16,19 +16,26 @@ gen A_H = high_average * player_avgpaydiff
 * add truncation dummy
 gen negative = 0
 replace negative = 1 if player_avgpaydiff < 0
-gen negative_avgpaydiff = player_avgpaydiff * negative
+gen negative_avgpaydiff = negative * player_avgpaydiff
+
+* add intersection between truncation and treatments
+gen negative_A = negative * A_regret
+gen negative_H = negative * H_info
+gen negative_A_H = negative * A_H
 
 * CH games mu estimation
 reg player_switch player_avgpaydiff A_regret H_info A_H if game=="BM", nocons cluster(session_code)
 outreg2 using D:\stata_table, tex nonote se replace nolabel bdec(4)
 
-reg player_switch player_avgpaydiff negative_avgpaydiff A_regret H_info A_H if game=="BM", nocons cluster(session_code)
+reg player_switch player_avgpaydiff A_regret H_info A_H negative_avgpaydiff ///
+    negative_A negative_H negative_A_H if game=="BM", nocons cluster(session_code)
 outreg2 using D:\stata_table, tex nonote se append nolabel bdec(4)
 
 * MU games mu estimation
 reg player_switch player_avgpaydiff A_regret H_info A_H if game=="MV", nocons cluster(session_code)
 outreg2 using D:\stata_table, tex nonote se append nolabel bdec(4)
 
-reg player_switch player_avgpaydiff negative_avgpaydiff A_regret H_info A_H if game=="MV", nocons cluster(session_code)
+reg player_switch player_avgpaydiff A_regret H_info A_H negative_avgpaydiff ///
+    negative_A negative_H negative_A_H if game=="MV", nocons cluster(session_code)
 outreg2 using D:\stata_table, tex nonote se append nolabel bdec(4)
 
