@@ -1,5 +1,5 @@
 * load data
-use "D:\Dropbox\Working Papers\Correlated Equilibrium\data\corr_equilibrium\Data\stata_pool_mu.dta", clear
+use "C:\Users\fenix\Dropbox\Working Papers\Correlated Equilibrium\data\corr_equilibrium\Data\stata_pool_mu.dta", clear
 
 * add treatment variables
 gen high_information = 0
@@ -13,11 +13,22 @@ gen A_regret = average_regret * player_avgpaydiff
 gen H_info = high_information * player_avgpaydiff
 gen A_H = high_average * player_avgpaydiff
 
+* add truncation dummy
+gen negative = 0
+replace negative = 1 if player_avgpaydiff < 0
+gen negative_avgpaydiff = player_avgpaydiff * negative
+
 * CH games mu estimation
 reg player_switch player_avgpaydiff A_regret H_info A_H if game=="BM", nocons cluster(session_code)
-outreg2 using D:\Dropbox\stata_table, tex nonote se replace nolabel bdec(4)
+outreg2 using D:\stata_table, tex nonote se replace nolabel bdec(4)
+
+reg player_switch player_avgpaydiff negative_avgpaydiff A_regret H_info A_H if game=="BM", nocons cluster(session_code)
+outreg2 using D:\stata_table, tex nonote se append nolabel bdec(4)
 
 * MU games mu estimation
 reg player_switch player_avgpaydiff A_regret H_info A_H if game=="MV", nocons cluster(session_code)
-outreg2 using D:\Dropbox\stata_table, tex nonote se append nolabel bdec(4)
+outreg2 using D:\stata_table, tex nonote se append nolabel bdec(4)
+
+reg player_switch player_avgpaydiff negative_avgpaydiff A_regret H_info A_H if game=="MV", nocons cluster(session_code)
+outreg2 using D:\stata_table, tex nonote se append nolabel bdec(4)
 
