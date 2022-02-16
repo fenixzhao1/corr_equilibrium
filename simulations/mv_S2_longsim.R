@@ -95,9 +95,9 @@ decision_hm2000r = function(mu, iteration, my_history, your_history){
   lastchoice = my_history[iteration-1]
   
   # compute regret for all possible decisions
-  regret1 = regret_avgpay(1, iteration, my_history, your_history)
-  regret2 = regret_avgpay(2, iteration, my_history, your_history)
-  regret3 = regret_avgpay(3, iteration, my_history, your_history)
+  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
+  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
+  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
   
   # calculate the decision when my last choice is 1
   if (lastchoice == 1){
@@ -149,9 +149,9 @@ decision_hm2000r_logitR = function(mu, beta, iteration, my_history, your_history
   lastchoice = my_history[iteration-1]
   
   # compute regret for all possible decisions
-  regret1 = regret_avgpay(1, iteration, my_history, your_history)
-  regret2 = regret_avgpay(2, iteration, my_history, your_history)
-  regret3 = regret_avgpay(3, iteration, my_history, your_history)
+  regret1 = regret_hm2000r(1, iteration, my_history, your_history)
+  regret2 = regret_hm2000r(2, iteration, my_history, your_history)
+  regret3 = regret_hm2000r(3, iteration, my_history, your_history)
   
   # calculate the decision when my last choice is 1
   if (lastchoice == 1){
@@ -224,12 +224,12 @@ history_p2[1:experiment] = sample(1:3, experiment, replace = TRUE)
 
 # calculate the rest of the decisions to n periods
 for (j in (experiment+1):n){
-  history_p1[j] = decision_hm2000r_logitR(mu, beta, j, history_p1, history_p2)[1]
-  history_p2[j] = decision_hm2000r_logitR(mu, beta, j, history_p2, history_p1)[1]
-  regretmax_p1[j] = decision_hm2000r_logitR(mu, beta, j, history_p1, history_p2)[2]
-  regretmax_p2[j] = decision_hm2000r_logitR(mu, beta, j, history_p2, history_p1)[2]
-  regretmin_p1[j] = decision_hm2000r_logitR(mu, beta, j, history_p1, history_p2)[3]
-  regretmin_p2[j] = decision_hm2000r_logitR(mu, beta, j, history_p2, history_p1)[3]
+  history_p1[j] = decision_hm2000r(mu, j, history_p1, history_p2)[1]
+  history_p2[j] = decision_hm2000r(mu, j, history_p2, history_p1)[1]
+  regretmax_p1[j] = decision_hm2000r(mu, j, history_p1, history_p2)[2]
+  regretmax_p2[j] = decision_hm2000r(mu, j, history_p2, history_p1)[2]
+  regretmin_p1[j] = decision_hm2000r(mu, j, history_p1, history_p2)[3]
+  regretmin_p2[j] = decision_hm2000r(mu, j, history_p2, history_p1)[3]
   
   if (j%%1000==0){print(j)}
 }
@@ -287,31 +287,28 @@ dfsim = dfsim %>% mutate(
 # print(jd)
 
 # plot action
-png(here("Figures/sim_MVlongavg_logit_action.png"), width = 800, height = 400)
+png(here("Figures/sim_MVlong_action.png"), width = 1000, height = 300)
 ggplot(data=dfsim) +
-  geom_line(aes(x=period,y=p1_choice, colour='blue')) +
-  geom_line(aes(x=period,y=p2_choice, colour='red')) +
+  geom_line(aes(x=period,y=p1_choice), colour='blue') +
+  geom_line(aes(x=period,y=p2_choice), colour='red') +
   scale_y_continuous(name='choice', waiver(), limits=c(1,3), breaks = c(1,2,3),
                      labels = c('T/L','M/C','B/R')) +
   scale_x_continuous(name='periods', waiver(), limits=c(0,20000), breaks = c(100,1000,5000,10000,20000)) +
-  scale_colour_manual(values=c('blue', 'red'), labels=c('row player', 'column player'))
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  #scale_colour_manual(values=c('blue', 'red'), labels=c('row player', 'column player'))
 dev.off()
 
 # plot regret
-png(here("Figures/sim_MVlongavg_logit_regret.png"), width = 800, height = 400)
+png(here("Figures/sim_MVlong_regret.png"), width = 1000, height = 300)
 ggplot(data=dfsim) +
-  geom_line(aes(x=period,y=p1_regretmax, colour='blue')) +
+  geom_line(aes(x=period,y=p1_regretmax), colour='blue') +
   #geom_line(aes(x=period,y=p1_regretmin, colour='blue')) +
-  geom_line(aes(x=period,y=p2_regretmax, colour='red')) +
+  geom_line(aes(x=period,y=p2_regretmax), colour='red') +
   #geom_line(aes(x=period,y=p2_regretmin, colour='red')) +
-  scale_y_continuous(name='regret', waiver(), limits=c(-120,120), breaks = c(-100,0,100)) +
+  scale_y_continuous(name='regret', waiver(), limits=c(-105,105), breaks = c(-100,0,100)) +
   scale_x_continuous(name='periods', waiver(), limits=c(0,20000), breaks = c(100,1000,5000,10000,20000)) +
-  scale_colour_manual(values=c('blue', 'red'), labels=c('row player', 'column player'))
+  theme(axis.title.x = element_text(size = 15), axis.title.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15), axis.text.y = element_text(size = 15))
+  #scale_colour_manual(values=c('blue', 'red'), labels=c('row player', 'column player'))
 dev.off()
-
-# # export data
-# dfsim = dfsim %>% mutate(
-#   regret = 'C',
-#   response = 'HM'
-# )
-# write.csv(dfsim, here("Data", "sim_mvlong_c.csv"))
