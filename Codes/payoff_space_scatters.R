@@ -1,6 +1,6 @@
 ##### Data preparation #####
 # load packages
-#rm(list = ls())
+rm(list = ls())
 library(here)
 library(ggplot2)
 library(dplyr)
@@ -10,7 +10,7 @@ full_data = read.csv(here('Data','data_all.csv'))
 
 plot_no_data <- FALSE #save space without data points
 
-df <- filter(full_data, period > 20)
+df <- filter(full_data, period > 30)
 
 df_co <- df %>%
   group_by(session_round_pair_id, treatment)  %>%
@@ -260,8 +260,10 @@ if(plot_no_data==TRUE){
   ggsave(here("Figures", 'piMV.png'))
 }
 
-for(tre in label_tre){
-  data_tre <-filter(df_co, treatment == tre)
+#for(tre in label_tre){
+for (i in 1:length(label_tre)){
+  tre = label_tre[i]
+  data_tre <-filter(df_co, treatment == label_tre[i])
   pepito<- paste('pi_space_',tre,'.png',sep='')
   
   if(grepl("BM",tre, fixed = TRUE)==TRUE){
@@ -291,7 +293,7 @@ for(tre in label_tre){
       annotate("point", x = 150, y = 150, colour = "blue",shape=10) 
   }
   
-  ggsave(here("Figures", pepito))
+  ggsave(here("Figures/last20", pepito))
 }
 
 

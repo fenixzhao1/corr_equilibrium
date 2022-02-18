@@ -14,7 +14,7 @@ uniquetreatment = unique(full_data$treatment)
 density_matrix = list()
 total_obs = list()
 
-df_second = filter(full_data, period > 20)
+df_second = filter(full_data, period > 30)
 
 for (i in 1:length(uniquetreatment)){
   df_treatment = filter(df_second, treatment == uniquetreatment[i])
