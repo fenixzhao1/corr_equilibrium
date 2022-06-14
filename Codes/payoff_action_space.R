@@ -1,6 +1,6 @@
 ##### Data preparation #####
 # load packages
-#rm(list = ls())
+rm(list = ls())
 library(here)
 library(ggplot2)
 library(dplyr)
@@ -56,9 +56,10 @@ for (i in 1:length(uniquepairs)){
 rm(df_temp)
 
 # generate fraction table
-table = matrix(0, nrow = 4, ncol = 2)
+table = matrix(0, nrow = 4, ncol = 4)
 rownames(table) = uniquetreatments
-colnames(table) = c('payoff space', 'action space')
+colnames(table) = c('payoff space', 'action space', 
+                    'action space row', 'action space col')
 
 
 ##### pairs in payoff space #####
@@ -80,6 +81,8 @@ for (i in 1:length(uniquetreatments)){
   table[i,1] = mean(df_temp$in_ce)
 }
 
+rm(df_temp)
+
 
 ##### pairs in action space #####
 # check whether a pair is in the CE action space
@@ -96,10 +99,12 @@ df = df %>% mutate(
   eq17 = is_12*(1-2) + is_22*(2-0) + is_32*(0-1),
   eq18 = is_13*(0-1) + is_23*(1-2) + is_33*(2-0),
   eq19 = is_13*(2-1) + is_23*(0-2) + is_33*(1-0),
-  in_ce_row = ifelse(eq8<=0&eq9<=0&eq10<=0&eq11<=0&eq12<=0&eq13<=0, 1, 0),
-  in_ce_col = ifelse(eq14<=0&eq15<=0&eq16<=0&eq17<=0&eq18<=0&eq19<=0, 1, 0),
-  #in_ce_row = ifelse(eq8<=0.2&eq9<=0.2&eq10<=0.2&eq11<=0.2&eq12<=0.2&eq13<=0.2, 1, 0),
-  #in_ce_col = ifelse(eq14<=0.2&eq15<=0.2&eq16<=0.2&eq17<=0.2&eq18<=0.2&eq19<=0.2, 1, 0),
+  #in_ce_row = ifelse(eq8<=0&eq9<=0&eq10<=0&eq11<=0&eq12<=0&eq13<=0, 1, 0),
+  #in_ce_col = ifelse(eq14<=0&eq15<=0&eq16<=0&eq17<=0&eq18<=0&eq19<=0, 1, 0),
+  #in_ce_row = ifelse(eq8<=0.1&eq9<=0.1&eq10<=0.1&eq11<=0.1&eq12<=0.1&eq13<=0.1, 1, 0),
+  #in_ce_col = ifelse(eq14<=0.1&eq15<=0.1&eq16<=0.1&eq17<=0.1&eq18<=0.1&eq19<=0.1, 1, 0),
+  in_ce_row = ifelse(eq8<=0.2&eq9<=0.2&eq10<=0.2&eq11<=0.2&eq12<=0.2&eq13<=0.2, 1, 0),
+  in_ce_col = ifelse(eq14<=0.2&eq15<=0.2&eq16<=0.2&eq17<=0.2&eq18<=0.2&eq19<=0.2, 1, 0),
   in_ce_all = ifelse(in_ce_row==1&in_ce_col==1, 1, 0)
 )
 
@@ -107,6 +112,8 @@ df = df %>% mutate(
 for (i in 1:length(uniquetreatments)){
   df_temp = filter(df, treatment == uniquetreatments[i])
   table[i,2] = mean(df_temp$in_ce_all)
+  table[i,3] = mean(df_temp$in_ce_row)
+  table[i,4] = mean(df_temp$in_ce_col)
 }
 
 xtable(table, digits = 2)
